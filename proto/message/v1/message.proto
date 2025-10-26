@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package message.v1;
+
+import "google/protobuf/empty.proto";
+
+option go_package = "proto/message/v1";
+
+message Message {
+  string id = 1;         
+  string content = 2;    
+  int64 timestamp = 3;   
+}
+
+message SendMessageRequest {
+  string content = 1;    
+}
+
+message SendMessageResponse {
+  bool success = 1;
+  string error = 2;      
+}
+
+message GetHistoryRequest {
+  uint32 limit = 1;       
+}
+
+message GetHistoryResponse {
+  repeated Message messages = 1;  
+}
+
+
+service MessageService {
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
+  rpc StreamMessages(google.protobuf.Empty) returns (stream Message);
+}
