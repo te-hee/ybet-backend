@@ -6,43 +6,54 @@
 
 ## /messages
 
-### Metody
+`GET /messages?limit=10`
+Pobiera historię wiadomości
+`limit` określa maksymalną liczbę zwróconych wiadomości
 
-- GET - Pobieranie historii wiadomości
-- POST - Wysyłanie wiadomości
+**Example Request**
+curl -X GET 'https://api.example.com/v1/messages?limit=10'
 
-### Ciała requestów
-
-- GET:
- ```json
-{"limit": dodatnia liczba}
-```
-- POST:
+**Example response**
+Success (200 OK)
 ```json
-{"content": treść wiadomości w stringu}
+{
+    "Success": true,
+    "Messages": [
+        {"Uuid": "a1b2c3", "Content": "Hello world!", "Timestamp": 1730049060},
+        {"Uuid": "d4e5f6", "Content": "meowwww", "Timestamp": 1730049060},
+        {"Uuid": "g7h8i9", "Content": "Hi cutie~", "Timestamp": 1730049060}
+    ]
+}
 ```
 
-### Ciała responsów
-- GET:  
-    W prypadku powodzenia:
+Error (400 Bad Request)
+```json
+{
+    "Success": false,
+    "Error": "Failed reading message history"
+}
+```
 
-    ```json
-    {"Success": true, "Messages": [{"Uuid": string, "Content": string, "Timestamp": uint}, ...]}
-    ```
-    W przypadku niepowodzenia:
+`POST /messages`
+Wysyła wiadomość
 
-    ```json
-    {"Success": false, "Error": wiadomość errora w stringu}
-- POST:  
-    W prypadku powodzenia:
+**Example request body (JSON)**
+```json
+{ "content": "Hello world!" }
+```
 
-    ```json
-    {"Success": true}
-    ```
-    W przypadku niepowodzenia:
+**Example response**
+Success (200 OK)
+```json
+{ "Success": true }
+```
 
-    ```json
-    {"Success": false, "Error": wiadomość errora w stringu}
-    ```
+Error (500 Internal Server Error)
+```json
+{
+    "Success": false,
+    "Error": "Failed to send message"
+}
+```
 
 
