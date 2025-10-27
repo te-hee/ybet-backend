@@ -7,9 +7,9 @@ import "google/protobuf/empty.proto";
 option go_package = "proto/message/v1";
 
 message Message {
-  string id = 1;         
+  string uuid = 1;         
   string content = 2;    
-  int64 timestamp = 3;   
+  uint64 timestamp = 3;   
 }
 
 message SendMessageRequest {

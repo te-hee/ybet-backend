@@ -7,12 +7,13 @@
 package v1
 
 import (
-	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
-	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
+
+	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
+	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -24,9 +25,9 @@ const (
 
 type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
-	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	Timestamp     uint64                 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -61,9 +62,9 @@ func (*Message) Descriptor() ([]byte, []int) {
 	return file_proto_message_v1_message_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Message) GetId() string {
+func (x *Message) GetUuid() string {
 	if x != nil {
-		return x.Id
+		return x.Uuid
 	}
 	return ""
 }
@@ -75,7 +76,7 @@ func (x *Message) GetContent() string {
 	return ""
 }
 
-func (x *Message) GetTimestamp() int64 {
+func (x *Message) GetTimestamp() uint64 {
 	if x != nil {
 		return x.Timestamp
 	}
@@ -271,11 +272,11 @@ var File_proto_message_v1_message_proto protoreflect.FileDescriptor
 const file_proto_message_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"\x1eproto/message/v1/message.proto\x12\n" +
-	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"Q\n" +
-	"\aMessage\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x18\n" +
+	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"U\n" +
+	"\aMessage\x12\x12\n" +
+	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\".\n" +
+	"\ttimestamp\x18\x03 \x01(\x04R\ttimestamp\".\n" +
 	"\x12SendMessageRequest\x12\x18\n" +
 	"\acontent\x18\x01 \x01(\tR\acontent\"E\n" +
 	"\x13SendMessageResponse\x12\x18\n" +
