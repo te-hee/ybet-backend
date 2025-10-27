@@ -27,22 +27,22 @@
     W prypadku powodzenia:
 
     ```json
-    {"success": true, "messages": [{"uuid": string, "content": string, "timestamp": uint}, ...]}
+    {"Success": true, "Messages": [{"Uuid": string, "Content": string, "Timestamp": uint}, ...]}
     ```
     W przypadku niepowodzenia:
 
     ```json
-    {"success": false, "error": wiadomość errora w stringu}
+    {"Success": false, "Error": wiadomość errora w stringu}
 - POST:  
     W prypadku powodzenia:
 
     ```json
-    {"success": true}
+    {"Success": true}
     ```
     W przypadku niepowodzenia:
 
     ```json
-    {"success": false, "error": wiadomość errora w stringu}
+    {"Success": false, "Error": wiadomość errora w stringu}
     ```
 
 
