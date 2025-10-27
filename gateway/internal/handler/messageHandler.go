@@ -14,7 +14,7 @@ type MessageHander struct {
 	service *service.MessageService
 }
 
-var badRequest = model.OutputError{Output: model.Output{Success: false}, Error: "Bad Request"}
+var badRequest = model.NewOutputError("Bad Request")
 
 func NewMessageHandler(service *service.MessageService) *MessageHander {
 	messageHander := &MessageHander{
@@ -41,8 +41,9 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 
 		if input.Limit < 1{
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(model.OutputError{Output: model.Output{Success: false}, Error: "Non positive number passed"})
-			fmt.Println("Non positiv number passed")
+			errorMessage := "Non positiv number passed"
+			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
+			fmt.Println(errorMessage)
 			return
 		}
 
@@ -56,8 +57,7 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		response := model.OutputGetHistory{Output: model.Output{Success: true}, Messages: messages}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(model.NewOutputGetHistory(messages))
 		return
 
 	case http.MethodPost:
@@ -73,6 +73,13 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if input.Conetnt == ""{
+			w.WriteHeader(http.StatusBadRequest)
+			errorMessage :=  "Content param was not passed or is empty string"
+			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
+			log.Println(errorMessage)
+			return
+		}
 
 		err := h.service.SendMessage(input.Conetnt)
 
@@ -84,8 +91,7 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		response := model.OutputSendMessege{Output: model.Output{Success: true}}
-		json.NewEncoder(w).Encode(response)
+		json.NewEncoder(w).Encode(model.NewOutputSendMessage())
 		return
 
 	default:
