@@ -38,7 +38,7 @@ func NewMessageServer(serviceLayer *service.ServiceLayer) *MessageServer {
 
 func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessageRequest) (*messagev1.SendMessageResponse, error) {
 	msg := models.Message{
-		Id:        uuid.NewString(),
+		Id:        uuid.New(),
 		Message:   req.Content,
 		Timestamp: time.Now().Unix(),
 	}
