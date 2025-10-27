@@ -4,7 +4,7 @@
 
 ```
 Message{
-    id int64
+    uuid string
     content string
     timestamp int64
 }
@@ -19,7 +19,7 @@ SendMessageResponse {
 }
 
 GetHistoryRequest{
-    limit int32
+    limit uint32
 }
 
 GetHistoryResponse{
