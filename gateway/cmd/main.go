@@ -37,7 +37,7 @@ func main() {
 	service := service.NewMessageService(repo)
 	handler := handler.NewMessageHandler(service)
 
-	http.HandleFunc("/messages", handler.HandleMesseges)
+	http.HandleFunc("/messages", handler.HandleMessages)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		panic(err)
 	}

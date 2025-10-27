@@ -4,96 +4,93 @@ import (
 	"backend/gateway/internal/model"
 	"backend/gateway/internal/service"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"time"
+	"strconv"
 )
 
-type MessageHander struct {
+type MessageHandler struct {
 	service *service.MessageService
 }
 
 var badRequest = model.NewOutputError("Bad Request")
 
-func NewMessageHandler(service *service.MessageService) *MessageHander {
-	messageHander := &MessageHander{
-		service: service,
-	}
-	return messageHander
+func NewMessageHandler(service *service.MessageService) *MessageHandler {
+	return &MessageHandler{service: service}
 }
 
-func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Method, r.Body, time.Now())
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Println("Error encoding response:", err)
+	}
+}
+
+func writeErr(w http.ResponseWriter, status int, message string) {
+	writeJSON(w, status, model.NewOutputError(message))
+}
+
+func (h *MessageHandler) handleGetMessages(w http.ResponseWriter, r *http.Request) {
+	limitStr := r.URL.Query().Get("limit")
+	if limitStr == "" {
+		writeErr(w, http.StatusBadRequest, "Missing 'limit' query param")
+		return
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1{
+		writeErr(w, http.StatusBadRequest, "Invalid 'limit' param")
+		return
+	}
+
+	messages, err := h.service.GetMessageHistory(uint32(limit))
+
+	if err != nil {
+		log.Println("Error fetching messages:", err)
+		writeErr(w, http.StatusInternalServerError, "Failed reading message history")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))
+}
+
+func (h *MessageHandler) handlePostMessages(w http.ResponseWriter, r *http.Request) {
+	var message model.InputMessage
+	if err := json.NewDecoder(r.Body).Decode(&message); err != nil {
+		writeErr(w, http.StatusBadRequest, "Invalid JSON body")
+		log.Println("Error parsing request:", err)
+		return
+	}
+
+	if message.Content == "" {
+		errorMessage := "Missing or empty 'content' field"
+		writeErr(w, http.StatusBadRequest, errorMessage)
+		log.Println(errorMessage)
+		return
+	}
+
+	err := h.service.SendMessage(message.Content)
+
+	if err != nil {
+		log.Println("Error sending message:", err)
+		writeErr(w, http.StatusInternalServerError, "Failed to send message")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, model.NewOutputSendMessage())
+}
+
+func (h *MessageHandler) HandleMessages(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Request: %s %v", r.Method, r.URL.Path)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	defer r.Body.Close()
 	switch r.Method {
 	case http.MethodGet:
-
-		var input model.InputHistory
-
-		w.Header().Set("Content-type", "application/json")
-
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
-			log.Println(err)
-			return
-		}
-
-		if input.Limit < 1{
-			w.WriteHeader(http.StatusBadRequest)
-			errorMessage := "Non positiv number passed"
-			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
-			fmt.Println(errorMessage)
-			return
-		}
-
-		messages, err := h.service.GetMessageHistory(input.Limit)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
-			log.Println(err)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(model.NewOutputGetHistory(messages))
-		return
-
+		h.handleGetMessages(w, r)
 	case http.MethodPost:
-
-		badRequest := model.OutputSendMessege{}
-
-		var input model.InputMessage
-		w.Header().Set("Content-type", "application/json")
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
-			log.Println(err)
-			return
-		}
-
-		if input.Conetnt == ""{
-			w.WriteHeader(http.StatusBadRequest)
-			errorMessage :=  "Content param was not passed or is empty string"
-			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
-			log.Println(errorMessage)
-			return
-		}
-
-		err := h.service.SendMessage(input.Conetnt)
-
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
-			log.Print(err)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(model.NewOutputSendMessage())
-		return
-
+		h.handlePostMessages(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
