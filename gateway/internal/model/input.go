@@ -1,7 +1,7 @@
 package model
 
 type InputMessage struct{
-	Conetnt string `json:"content"`
+	Content string `json:"content"`
 }
 
 type InputHistory struct{
