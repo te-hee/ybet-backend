@@ -4,7 +4,6 @@ import (
 	"backend/gateway/internal/model"
 	"backend/gateway/internal/service"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -35,7 +34,7 @@ func writeError(w http.ResponseWriter, status int, message string){
 }
 
 func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Method, r.Body, time.Now())
+	log.Println(r.Method, r.Body, time.Now())
 	w.Header().Set("Content-type", "application/json")
 	switch r.Method {
 	case http.MethodGet:
@@ -59,7 +58,7 @@ func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r* http.R
 		if input.Limit < 1{
 			errorMessage := "Non positiv number passed"
 			writeError(w, http.StatusBadRequest, errorMessage)
-			fmt.Println(errorMessage)
+			log.Println(errorMessage)
 			return
 		}
 
