@@ -23,26 +23,42 @@ func NewMessageHandler(service *service.MessageService) *MessageHander {
 	return messageHander
 }
 
+func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Println("Error encoding response:", err)
+	}
+}
+
+func writeError(w http.ResponseWriter, status int, message string){
+	writeJSON(w, status, model.NewOutputError(message))
+}
+
 func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(r.Method, r.Body, time.Now())
+	w.Header().Set("Content-type", "application/json")
 	switch r.Method {
 	case http.MethodGet:
+		h.HandleGetMessageHistory(w, r)
+	case http.MethodPost:
+		h.HandleSendMessage(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
 
+func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r* http.Request){
 		var input model.InputHistory
 
-		w.Header().Set("Content-type", "application/json")
-
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
+			writeError(w, http.StatusBadRequest, "Bad request")
 			log.Println(err)
 			return
 		}
 
 		if input.Limit < 1{
-			w.WriteHeader(http.StatusBadRequest)
 			errorMessage := "Non positiv number passed"
-			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
+			writeError(w, http.StatusBadRequest, errorMessage)
 			fmt.Println(errorMessage)
 			return
 		}
@@ -56,27 +72,20 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(model.NewOutputGetHistory(messages))
-		return
+		writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))	
+}
 
-	case http.MethodPost:
-
-		badRequest := model.OutputSendMessege{}
-
+func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request){
 		var input model.InputMessage
-		w.Header().Set("Content-type", "application/json")
 		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
+			writeError(w, http.StatusBadRequest, "Bad request")
 			log.Println(err)
 			return
 		}
 
 		if input.Conetnt == ""{
-			w.WriteHeader(http.StatusBadRequest)
-			errorMessage :=  "Content param was not passed or is empty string"
-			json.NewEncoder(w).Encode(model.NewOutputError(errorMessage))
+			errorMessage := "Content was not passed or its empty"
+			writeError(w, http.StatusBadRequest, errorMessage)
 			log.Println(errorMessage)
 			return
 		}
@@ -84,17 +93,10 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 		err := h.service.SendMessage(input.Conetnt)
 
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
+			writeError(w, http.StatusBadRequest, "Bad request")
 			log.Print(err)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(model.NewOutputSendMessage())
-		return
-
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
+		writeJSON(w, http.StatusOK, model.NewOutputSendMessage())
 }
