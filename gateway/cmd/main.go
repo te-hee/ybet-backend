@@ -9,6 +9,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"github.com/rs/cors"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -19,6 +20,7 @@ var (
 )
 
 func main() {
+	mux := http.NewServeMux();
 
 	flag.Parse()
 	var opts []grpc.DialOption
@@ -37,8 +39,9 @@ func main() {
 	service := service.NewMessageService(repo)
 	handler := handler.NewMessageHandler(service)
 
-	http.HandleFunc("/messages", handler.HandleMesseges)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	mux.HandleFunc("/messages", handler.HandleMesseges)
+	handlerCORS := cors.Default().Handler(mux);
+	if err := http.ListenAndServe(":8080", handlerCORS); err != nil {
 		panic(err)
 	}
 }
