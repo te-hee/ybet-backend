@@ -24,7 +24,10 @@ Our skilled team:
 w przypadku niepowodzenia w połączeniu do websocketa
 ```json
 {"error": treść błędu}
-
+```
+wiadomość przychodząca
+```json
+{"Uuid": string, "Content": string, "Timestamp": uint}
 ```
 
 ## gateway
