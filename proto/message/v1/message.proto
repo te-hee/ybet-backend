@@ -34,4 +34,5 @@ service MessageService {
   rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
   rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
   rpc StreamMessages(google.protobuf.Empty) returns (stream Message);
+  rpc Ready(google.protobuf.Empty) returns (google.protobuf.Empty);
 }

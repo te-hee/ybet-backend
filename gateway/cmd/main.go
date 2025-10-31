@@ -9,6 +9,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+
 	"github.com/rs/cors"
 
 	"google.golang.org/grpc"
@@ -20,7 +21,7 @@ var (
 )
 
 func main() {
-	mux := http.NewServeMux();
+	mux := http.NewServeMux()
 
 	flag.Parse()
 	var opts []grpc.DialOption
@@ -40,7 +41,7 @@ func main() {
 	handler := handler.NewMessageHandler(service)
 
 	mux.HandleFunc("/messages", handler.HandleMesseges)
-	handlerCORS := cors.Default().Handler(mux);
+	handlerCORS := cors.Default().Handler(mux)
 	if err := http.ListenAndServe(":8080", handlerCORS); err != nil {
 		panic(err)
 	}

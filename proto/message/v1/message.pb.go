@@ -284,12 +284,13 @@ const file_proto_message_v1_message_proto_rawDesc = "" +
 	"\x11GetHistoryRequest\x12\x14\n" +
 	"\x05limit\x18\x01 \x01(\rR\x05limit\"E\n" +
 	"\x12GetHistoryResponse\x12/\n" +
-	"\bmessages\x18\x01 \x03(\v2\x13.message.v1.MessageR\bmessages2\xee\x01\n" +
+	"\bmessages\x18\x01 \x03(\v2\x13.message.v1.MessageR\bmessages2\xa7\x02\n" +
 	"\x0eMessageService\x12N\n" +
 	"\vSendMessage\x12\x1e.message.v1.SendMessageRequest\x1a\x1f.message.v1.SendMessageResponse\x12K\n" +
 	"\n" +
 	"GetHistory\x12\x1d.message.v1.GetHistoryRequest\x1a\x1e.message.v1.GetHistoryResponse\x12?\n" +
-	"\x0eStreamMessages\x12\x16.google.protobuf.Empty\x1a\x13.message.v1.Message0\x01B\x12Z\x10proto/message/v1b\x06proto3"
+	"\x0eStreamMessages\x12\x16.google.protobuf.Empty\x1a\x13.message.v1.Message0\x01\x127\n" +
+	"\x05Ready\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.EmptyB\x12Z\x10proto/message/v1b\x06proto3"
 
 var (
 	file_proto_message_v1_message_proto_rawDescOnce sync.Once
@@ -317,11 +318,13 @@ var file_proto_message_v1_message_proto_depIdxs = []int32{
 	1, // 1: message.v1.MessageService.SendMessage:input_type -> message.v1.SendMessageRequest
 	3, // 2: message.v1.MessageService.GetHistory:input_type -> message.v1.GetHistoryRequest
 	5, // 3: message.v1.MessageService.StreamMessages:input_type -> google.protobuf.Empty
-	2, // 4: message.v1.MessageService.SendMessage:output_type -> message.v1.SendMessageResponse
-	4, // 5: message.v1.MessageService.GetHistory:output_type -> message.v1.GetHistoryResponse
-	0, // 6: message.v1.MessageService.StreamMessages:output_type -> message.v1.Message
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
+	5, // 4: message.v1.MessageService.Ready:input_type -> google.protobuf.Empty
+	2, // 5: message.v1.MessageService.SendMessage:output_type -> message.v1.SendMessageResponse
+	4, // 6: message.v1.MessageService.GetHistory:output_type -> message.v1.GetHistoryResponse
+	0, // 7: message.v1.MessageService.StreamMessages:output_type -> message.v1.Message
+	5, // 8: message.v1.MessageService.Ready:output_type -> google.protobuf.Empty
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
