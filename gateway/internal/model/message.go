@@ -6,31 +6,31 @@ import (
 	"github.com/google/uuid"
 )
 
-type Message struct{
-	Uuid uuid.UUID
-	Content string
+type Message struct {
+	Uuid      uuid.UUID
+	Content   string
 	Timestamp uint64
 }
 
-func ProtoToModel(protoMessage v1.Message) (*Message, error){
+func ProtoToModel(protoMessage *v1.Message) (*Message, error) {
 	id, err := uuid.Parse(protoMessage.Uuid)
 
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
-	message := &Message{	
-		Uuid: id,
-		Content: protoMessage.Content,
+	message := &Message{
+		Uuid:      id,
+		Content:   protoMessage.Content,
 		Timestamp: uint64(protoMessage.Timestamp),
-	}	
+	}
 	return message, nil
 }
 
-func ModelToProto(message Message) (*v1.Message){
+func ModelToProto(message Message) *v1.Message {
 	protoMessage := &v1.Message{
-		Uuid: message.Uuid.String(),
-		Content: message.Content,
+		Uuid:      message.Uuid.String(),
+		Content:   message.Content,
 		Timestamp: int64(message.Timestamp),
 	}
 	return protoMessage

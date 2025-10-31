@@ -46,6 +46,7 @@ func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessag
 	m.service.SaveMessage(msg)
 
 	m.messageBroadcast <- msg
+	log.Println(m.messageBroadcast)
 
 	return &messagev1.SendMessageResponse{
 		Success: true,
@@ -66,10 +67,17 @@ func (m *MessageServer) GetHistory(_ context.Context, req *messagev1.GetHistoryR
 }
 
 func (m *MessageServer) StreamMessages(_ *emptypb.Empty, stream grpc.ServerStreamingServer[messagev1.Message]) error {
+	log.Println("new client connected")
+	log.Println(m.messageBroadcast)
 	for {
 		msg := <-m.messageBroadcast
 		if err := stream.Send(msg.ToProto()); err != nil {
 			return err
 		}
+		log.Println("sent message to ws")
 	}
+}
+
+func (m *MessageServer) Ready(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
