@@ -2,9 +2,9 @@ package repository
 
 import (
 	"backend/gateway/internal/model"
-	v1 "backend/proto/message/v1"
 	"context"
 	"errors"
+	v1 "github.com/te-hee/ybet-backend/proto/message/v1"
 )
 
 type RepositoryGrpc struct {

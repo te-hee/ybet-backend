@@ -4,9 +4,9 @@ import (
 	"backend/gateway/internal/handler"
 	"backend/gateway/internal/repository"
 	"backend/gateway/internal/service"
-	v1 "backend/proto/message/v1"
 	"context"
 	"flag"
+	v1 "github.com/te-hee/ybet-backend/proto/message/v1"
 	"log"
 	"net/http"
 
