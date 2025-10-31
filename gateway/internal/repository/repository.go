@@ -29,7 +29,7 @@ func (r *RepositoryGrpc) GetMessageHistory(limit uint32) ([]model.Message, error
 	messages := []model.Message{}
 
 	for i := 0; i < len(response.Messages); i++ {
-		message, err := model.ProtoToModel(*response.Messages[i])
+		message, err := model.ProtoToModel(&*response.Messages[i])
 		if err != nil {
 			return nil, err
 		}

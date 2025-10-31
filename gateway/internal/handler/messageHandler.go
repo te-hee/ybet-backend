@@ -7,11 +7,14 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"github.com/gorilla/schema"
 )
 
 type MessageHander struct {
 	service *service.MessageService
 }
+
+var decoder  = schema.NewDecoder() // decoder for url params
 
 var badRequest = model.NewOutputError("Bad Request")
 
@@ -49,7 +52,7 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r* http.Request){
 		var input model.InputHistory
 
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		if err := decoder.Decode(&input, r.URL.Query()); err != nil {
 			writeError(w, http.StatusBadRequest, "Bad request")
 			log.Println(err)
 			return
