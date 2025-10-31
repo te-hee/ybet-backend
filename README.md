@@ -8,6 +8,12 @@ Our skilled team:
 - **hipo :333**
 - **Dawid =^w^=**
 
+## jak z tym pracować?
+*włączanie*
+`docker compose up --build -d`
+*wyłączanie*
+`docker compose down`
+
 ## Web socket
 - port: 8081
 - endpoint: /ws
