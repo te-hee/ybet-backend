@@ -1,10 +1,10 @@
 package main
 
 import (
-	"backend/broadcast/internal/handler"
-	messagestream "backend/broadcast/internal/messageStream"
-	"backend/broadcast/internal/models"
 	v1 "backend/proto/message/v1"
+	"broadcast/internal/handler"
+	messagestream "broadcast/internal/messageStream"
+	"broadcast/internal/models"
 	"context"
 	"flag"
 	"log"

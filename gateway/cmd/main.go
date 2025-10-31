@@ -1,12 +1,12 @@
 package main
 
 import (
-	"backend/gateway/internal/handler"
-	"backend/gateway/internal/repository"
-	"backend/gateway/internal/service"
 	v1 "backend/proto/message/v1"
 	"context"
 	"flag"
+	"gateway/internal/handler"
+	"gateway/internal/repository"
+	"gateway/internal/service"
 	"log"
 	"net/http"
 

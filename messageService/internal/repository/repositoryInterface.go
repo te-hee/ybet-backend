@@ -1,6 +1,6 @@
 package repository
 
-import "backend/messageService/internal/models"
+import "messageService/internal/models"
 
 type Repository interface {
 	SaveMessage(message models.Message)

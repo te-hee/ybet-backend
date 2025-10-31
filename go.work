@@ -3,6 +3,6 @@ go 1.25.3
 use (
 	./broadcast
 	./gateway
-	./messageService
 	./proto
+	./messageService
 )

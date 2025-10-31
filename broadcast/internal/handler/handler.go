@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"backend/broadcast/internal/models"
+	"broadcast/internal/models"
 	"encoding/json"
 	"log"
 	"net/http"

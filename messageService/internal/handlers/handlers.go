@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"backend/messageService/internal/models"
-	"backend/messageService/internal/service"
 	messagev1 "backend/proto/message/v1"
 	"context"
 	"log"
+	"messageService/internal/models"
+	"messageService/internal/service"
 	"os"
 	"strconv"
 	"time"

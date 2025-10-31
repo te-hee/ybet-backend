@@ -1,11 +1,11 @@
 package main
 
 import (
-	"backend/messageService/internal/handlers"
-	"backend/messageService/internal/repository"
-	"backend/messageService/internal/service"
 	messagev1 "backend/proto/message/v1"
 	"log"
+	"messageService/internal/handlers"
+	"messageService/internal/repository"
+	"messageService/internal/service"
 	"net"
 	"os"
 
