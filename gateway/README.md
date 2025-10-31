@@ -14,9 +14,13 @@
 ### Ciała requestów
 
 - GET:
- ```json
-{"limit": dodatnia liczba}
-```
+ ```
+(protocol)://(domain):(port)/messgaes?limit=(num)
+ ```
+ so for running localy
+ ```
+ http://localhost:8080/messages?limit=(num)
+ ```
 - POST:
 ```json
 {"content": treść wiadomości w stringu}
