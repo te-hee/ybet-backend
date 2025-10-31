@@ -1,10 +1,10 @@
 package repository
 
 import (
-	"backend/gateway/internal/model"
+	v1 "backend/proto/message/v1"
 	"context"
 	"errors"
-	v1 "github.com/te-hee/ybet-backend/proto/message/v1"
+	"gateway/internal/model"
 )
 
 type RepositoryGrpc struct {
@@ -29,7 +29,7 @@ func (r *RepositoryGrpc) GetMessageHistory(limit uint32) ([]model.Message, error
 	messages := []model.Message{}
 
 	for i := 0; i < len(response.Messages); i++ {
-		message, err := model.ProtoToModel(*response.Messages[i])
+		message, err := model.ProtoToModel(response.Messages[i])
 		if err != nil {
 			return nil, err
 		}

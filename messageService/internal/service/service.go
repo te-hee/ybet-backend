@@ -1,8 +1,8 @@
 package service
 
 import (
-	"backend/messageService/internal/models"
-	"backend/messageService/internal/repository"
+	"messageService/internal/models"
+	"messageService/internal/repository"
 )
 
 type ServiceLayer struct {

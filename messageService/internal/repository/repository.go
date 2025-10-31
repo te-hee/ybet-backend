@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"backend/messageService/internal/models"
+	"messageService/internal/models"
 )
 
 type MemoryRepo struct {

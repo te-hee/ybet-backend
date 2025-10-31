@@ -1,0 +1,39 @@
+version: "3.9"
+services:
+  message-service:
+    build:
+      context: .
+      dockerfile: ./messageService/Dockerfile
+    container_name: message-service
+    ports:
+      - "50051:50051"
+    environment:
+      - ENV=dev
+      - BUFFER_SIZE=100
+      - STORAGE_TYPE=memory
+
+  broadcast-service:
+    build:
+      context: .
+      dockerfile: ./broadcast/Dockerfile
+    container_name: broadcast-service
+    ports:
+      - "8081:8081"
+    environment:
+      - ENV=dev
+    depends_on:
+      - message-service
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: ./gateway/Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - ENV=dev
+    depends_on:
+      - message-service
+      - broadcast-service
+

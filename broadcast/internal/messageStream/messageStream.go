@@ -1,8 +1,8 @@
 package messagestream
 
 import (
-	"backend/broadcast/internal/models"
 	v1 "backend/proto/message/v1"
+	"broadcast/internal/models"
 	"context"
 	"log"
 

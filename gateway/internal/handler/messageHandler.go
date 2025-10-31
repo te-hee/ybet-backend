@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"backend/gateway/internal/model"
-	"backend/gateway/internal/service"
 	"encoding/json"
+	"gateway/internal/model"
+	"gateway/internal/service"
 	"log"
 	"net/http"
 	"time"
@@ -29,7 +29,7 @@ func writeJSON(w http.ResponseWriter, status int, data interface{}) {
 	}
 }
 
-func writeError(w http.ResponseWriter, status int, message string){
+func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, model.NewOutputError(message))
 }
 
@@ -46,56 +46,56 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r* http.Request){
-		var input model.InputHistory
+func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.Request) {
+	var input model.InputHistory
 
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			writeError(w, http.StatusBadRequest, "Bad request")
-			log.Println(err)
-			return
-		}
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		writeError(w, http.StatusBadRequest, "Bad request")
+		log.Println(err)
+		return
+	}
 
-		if input.Limit < 1{
-			errorMessage := "Non positiv number passed"
-			writeError(w, http.StatusBadRequest, errorMessage)
-			log.Println(errorMessage)
-			return
-		}
+	if input.Limit < 1 {
+		errorMessage := "Non positiv number passed"
+		writeError(w, http.StatusBadRequest, errorMessage)
+		log.Println(errorMessage)
+		return
+	}
 
-		messages, err := h.service.GetMessageHistory(input.Limit)
+	messages, err := h.service.GetMessageHistory(input.Limit)
 
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(badRequest)
-			log.Println(err)
-			return
-		}
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(badRequest)
+		log.Println(err)
+		return
+	}
 
-		writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))	
+	writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))
 }
 
-func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request){
-		var input model.InputMessage
-		if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-			writeError(w, http.StatusBadRequest, "Bad request")
-			log.Println(err)
-			return
-		}
+func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request) {
+	var input model.InputMessage
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		writeError(w, http.StatusBadRequest, "Bad request")
+		log.Println(err)
+		return
+	}
 
-		if input.Conetnt == ""{
-			errorMessage := "Content was not passed or its empty"
-			writeError(w, http.StatusBadRequest, errorMessage)
-			log.Println(errorMessage)
-			return
-		}
+	if input.Conetnt == "" {
+		errorMessage := "Content was not passed or its empty"
+		writeError(w, http.StatusBadRequest, errorMessage)
+		log.Println(errorMessage)
+		return
+	}
 
-		err := h.service.SendMessage(input.Conetnt)
+	err := h.service.SendMessage(input.Conetnt)
 
-		if err != nil {
-			writeError(w, http.StatusBadRequest, "Bad request")
-			log.Print(err)
-			return
-		}
+	if err != nil {
+		writeError(w, http.StatusBadRequest, "Bad request")
+		log.Print(err)
+		return
+	}
 
-		writeJSON(w, http.StatusOK, model.NewOutputSendMessage())
+	writeJSON(w, http.StatusOK, model.NewOutputSendMessage())
 }

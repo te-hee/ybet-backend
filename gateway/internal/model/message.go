@@ -1,7 +1,7 @@
 package model
 
 import (
-	v1 "github.com/te-hee/ybet-backend/proto/message/v1"
+	v1 "backend/proto/message/v1"
 
 	"github.com/google/uuid"
 )

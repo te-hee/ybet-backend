@@ -1,13 +1,14 @@
-FROM golang:1.25.3-alpine
-
+FROM golang:1.25.3-alpine AS builder
 WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
+COPY proto ./proto
+COPY gateway ./gateway
 
-COPY . .
+WORKDIR /app/gateway
 
-RUN go build -o main ./cmd
+RUN go build -o gateway ./cmd
 
-CMD ["./main"]
-
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/gateway/gateway .
+CMD ["./gateway", "--addr=message-service:50051"]
