@@ -7,6 +7,7 @@ import (
 )
 
 type Message struct {
+	UserId    uuid.UUID
 	Id        uuid.UUID
 	Message   string
 	Timestamp int64

@@ -36,7 +36,7 @@ func NewMessageServer(serviceLayer *service.ServiceLayer) *MessageServer {
 	}
 }
 
-func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessageRequest) (*messagev1.SendMessageResponse, error) {
+func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessageRequest) (*messagev1.MessageActionResponse, error) {
 	msg := models.Message{
 		Id:        uuid.New(),
 		Message:   req.Content,
@@ -48,7 +48,7 @@ func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessag
 	m.messageBroadcast <- msg
 	log.Println(m.messageBroadcast)
 
-	return &messagev1.SendMessageResponse{
+	return &messagev1.MessageActionResponse{
 		Success: true,
 	}, nil
 }
@@ -68,7 +68,6 @@ func (m *MessageServer) GetHistory(_ context.Context, req *messagev1.GetHistoryR
 
 func (m *MessageServer) StreamMessages(_ *emptypb.Empty, stream grpc.ServerStreamingServer[messagev1.Message]) error {
 	log.Println("new client connected")
-	log.Println(m.messageBroadcast)
 	for {
 		msg := <-m.messageBroadcast
 		if err := stream.Send(msg.ToProto()); err != nil {
