@@ -13,10 +13,22 @@ message Message {
 }
 
 message SendMessageRequest {
-  string content = 1;    
+  string user_id = 1;
+  string content = 2;    
 }
 
-message SendMessageResponse {
+message EditMessageRequest {
+  string user_id = 1;
+  string message_id = 2;
+  string content = 3;    
+}
+
+message DeleteMessageRequest {
+  string user_id = 1;
+  string message_id = 2;
+}
+
+message MessageActionResponse {
   bool success = 1;
   string error = 2;      
 }
@@ -31,7 +43,9 @@ message GetHistoryResponse {
 
 
 service MessageService {
-  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc SendMessage(SendMessageRequest) returns (MessageActionResponse);
+  rpc EditMessage(EditMessageRequest) returns (MessageActionResponse);
+  rpc DeleteMessage(DeleteMessageRequest) returns (MessageActionResponse);
   rpc GetHistory(GetHistoryRequest) returns (GetHistoryResponse);
   rpc StreamMessages(google.protobuf.Empty) returns (stream Message);
   rpc Ready(google.protobuf.Empty) returns (google.protobuf.Empty);
