@@ -70,9 +70,13 @@ type = payload type
 #### Ciała requestów
 
 - GET:
- ```json
-{"limit": dodatnia liczba}
-```
+ ```
+(protocol)://(domain):(port)/messgaes?limit=(num)
+ ```
+ so for running localy
+ ```
+ http://localhost:8080/messages?limit=(num)
+ ```
 - POST:
 ```json
 {"content": treść wiadomości w stringu}
@@ -83,21 +87,21 @@ type = payload type
     W prypadku powodzenia:
 
     ```json
-    {"Success": true, "Messages": [{"Uuid": string, "Content": string, "Timestamp": uint}, ...]}
+    {"success": true, "messages": [{"uuid": "string", "content": "string", "timestamp": "uint"}, ...]}
     ```
     W przypadku niepowodzenia:
 
     ```json
-    {"Success": false, "Error": wiadomość errora w stringu}
+    {"success": false, "error": "wiadomość errora w stringu"}
 - POST:  
     W prypadku powodzenia:
 
     ```json
-    {"Success": true}
+    {"success": true}
     ```
     W przypadku niepowodzenia:
 
     ```json
-    {"Success": false, "Error": wiadomość errora w stringu}
+    {"success": false, "error": "wiadomość errora w stringu"}
     ```
 
