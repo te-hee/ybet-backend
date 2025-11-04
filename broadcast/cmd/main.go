@@ -5,6 +5,7 @@ import (
 	"broadcast/config"
 	"broadcast/internal/handler"
 	messagestream "broadcast/internal/messageStream"
+	"broadcast/internal/models"
 	"context"
 	"flag"
 	"log"
@@ -34,7 +35,7 @@ func main() {
 	client := v1.NewMessageServiceClient(grpcClient)
 	log.Println("new message service client")
 
-	msgChannel := make(chan any, 100)
+	msgChannel := make(chan models.Message, 100)
 
 	messageStream := messagestream.NewMessageStreamClient(client, ctx, msgChannel)
 

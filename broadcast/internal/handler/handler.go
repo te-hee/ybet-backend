@@ -15,7 +15,7 @@ import (
 type WebSocketHandler struct {
 	mutex          *sync.Mutex
 	conns          map[string]*websocket.Conn
-	messageChannel chan any
+	messageChannel chan models.Message
 }
 
 var upgrader = websocket.Upgrader{
@@ -24,7 +24,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func NewWebsocketHandler(msgChan chan any) *WebSocketHandler {
+func NewWebsocketHandler(msgChan chan models.Message) *WebSocketHandler {
 	return &WebSocketHandler{
 		mutex:          &sync.Mutex{},
 		conns:          make(map[string]*websocket.Conn),

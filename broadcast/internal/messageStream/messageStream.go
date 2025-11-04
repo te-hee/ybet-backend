@@ -12,10 +12,10 @@ import (
 type MessageStream struct {
 	client         v1.MessageServiceClient
 	ctx            context.Context
-	messageChannel chan any
+	messageChannel chan models.Message
 }
 
-func NewMessageStreamClient(client v1.MessageServiceClient, ctx context.Context, channel chan any) *MessageStream {
+func NewMessageStreamClient(client v1.MessageServiceClient, ctx context.Context, channel chan models.Message) *MessageStream {
 	return &MessageStream{
 		client:         client,
 		ctx:            ctx,
@@ -49,9 +49,13 @@ func (m *MessageStream) Listen() error {
 			return err
 		}
 		msg := models.Message{
-			Id:        receivedMessage.GetUuid(),
-			Message:   receivedMessage.GetContent(),
-			Timestamp: uint64(receivedMessage.GetTimestamp()),
+			Target: "",
+			Type:   "UserMessage",
+			Payload: models.UserMessage{
+				Id:        receivedMessage.GetUuid(),
+				Message:   receivedMessage.GetContent(),
+				Timestamp: uint64(receivedMessage.GetTimestamp()),
+			},
 		}
 		log.Printf("got message: %v", msg)
 
