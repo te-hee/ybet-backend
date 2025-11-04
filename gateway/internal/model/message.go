@@ -7,9 +7,9 @@ import (
 )
 
 type Message struct {
-	Uuid      uuid.UUID
-	Content   string
-	Timestamp uint64
+	Uuid      uuid.UUID `json:"uuid"`
+	Content   string    `json:"content"`
+	Timestamp uint64    `json:"timestamp"`
 }
 
 func ProtoToModel(protoMessage *v1.Message) (*Message, error) {
