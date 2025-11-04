@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"broadcast/config"
 	"broadcast/internal/models"
 	"encoding/json"
 	"log"
@@ -13,8 +14,8 @@ import (
 
 type WebSocketHandler struct {
 	mutex          *sync.Mutex
-	conns          map[models.User]bool
-	messageChannel chan models.Message
+	conns          map[string]*websocket.Conn
+	messageChannel chan any
 }
 
 var upgrader = websocket.Upgrader{
@@ -23,10 +24,10 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func NewWebsocketHandler(msgChan chan models.Message) *WebSocketHandler {
+func NewWebsocketHandler(msgChan chan any) *WebSocketHandler {
 	return &WebSocketHandler{
 		mutex:          &sync.Mutex{},
-		conns:          make(map[models.User]bool),
+		conns:          make(map[string]*websocket.Conn),
 		messageChannel: msgChan,
 	}
 }
@@ -45,18 +46,30 @@ func writeError(w http.ResponseWriter, status int, message string) {
 }
 
 func (websockethandler *WebSocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
+	var userId string
+	if !*config.NoAuth {
+		token := r.URL.Query().Get("token")
+
+		if token == "" {
+			writeError(w, http.StatusUnauthorized, "provide token in url param")
+		}
+		userUUID, err := verifyJWT()
+		if err != nil {
+			writeError(w, 401, "error verifying JWT token :c")
+		}
+		userId = userUUID.String()
+
+	} else {
+		userId = uuid.NewString()
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		//Tymon :3
 		writeError(w, 418, "I'm a teapot")
 	}
-	user := models.User{
-		UserId: uuid.New(),
-		Conn:   conn,
-	}
 	websockethandler.mutex.Lock()
 
-	websockethandler.conns[user] = true
+	websockethandler.conns[userId] = conn
 
 	websockethandler.mutex.Unlock()
 
@@ -68,11 +81,11 @@ func (websockethandler *WebSocketHandler) BroadcastMessages() {
 		log.Println("got message from channel")
 		websockethandler.mutex.Lock()
 
-		for user := range websockethandler.conns {
+		for user, conn := range websockethandler.conns {
 			log.Println("sending message to user")
-			if err := user.Conn.WriteJSON(msg); err != nil {
+			if err := conn.WriteJSON(msg); err != nil {
 				log.Println("cant send message to user")
-				user.Conn.Close()
+				conn.Close()
 				delete(websockethandler.conns, user)
 			}
 		}
@@ -81,4 +94,8 @@ func (websockethandler *WebSocketHandler) BroadcastMessages() {
 		log.Println("sent message to all cons")
 
 	}
+}
+
+func verifyJWT() (uuid.UUID, error) {
+	return uuid.UUID{}, nil
 }

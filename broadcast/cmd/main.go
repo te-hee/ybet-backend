@@ -2,9 +2,9 @@ package main
 
 import (
 	v1 "backend/proto/message/v1"
+	"broadcast/config"
 	"broadcast/internal/handler"
 	messagestream "broadcast/internal/messageStream"
-	"broadcast/internal/models"
 	"context"
 	"flag"
 	"log"
@@ -16,11 +16,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-var (
-	serverAddr = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
-)
-
 func main() {
+	config.InitFlags()
 	flag.Parse()
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -28,7 +25,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	grpcClient, err := grpc.NewClient(*serverAddr, opts...)
+	grpcClient, err := grpc.NewClient(*config.ServerAddr, opts...)
 	if err != nil {
 		log.Panicf("Failed to create gRPC client: %v", err)
 	}
@@ -37,7 +34,7 @@ func main() {
 	client := v1.NewMessageServiceClient(grpcClient)
 	log.Println("new message service client")
 
-	msgChannel := make(chan models.Message, 100)
+	msgChannel := make(chan any, 100)
 
 	messageStream := messagestream.NewMessageStreamClient(client, ctx, msgChannel)
 

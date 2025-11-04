@@ -18,16 +18,42 @@ Our skilled team:
 - port: 8081
 - endpoint: /ws
 
-### /ws
-
-#### responsy
-w przypadku niepowodzenia w połączeniu do websocketa
+### /ws?token=jwt_token
+#### Dane
+**ogólny format**
 ```json
-{"error": treść błędu}
+{
+    "target": "string",
+    "type": "messageType",
+    "payload": "systemMessage | userMessage | userListUpdate"
+}
 ```
-wiadomość przychodząca
+type = payload type
+**messageType**: `'systemMessage'|'userMessage'|'userListUpdate'`
+
+**systemMessage**
 ```json
-{"Uuid": string, "Content": string, "Timestamp": uint}
+{
+    "content": "string",
+}
+```
+
+**userMessage**
+```json
+{
+    "uuid": "string",
+    "content": "string",
+    "timestamp": "uint"
+}
+
+```
+
+**userListUpdate**
+```json
+{
+    "action": "'connect'|'disconnect'"
+    "uuid": "string"
+}
 ```
 
 ## gateway

@@ -12,10 +12,10 @@ import (
 type MessageStream struct {
 	client         v1.MessageServiceClient
 	ctx            context.Context
-	messageChannel chan models.Message
+	messageChannel chan any
 }
 
-func NewMessageStreamClient(client v1.MessageServiceClient, ctx context.Context, channel chan models.Message) *MessageStream {
+func NewMessageStreamClient(client v1.MessageServiceClient, ctx context.Context, channel chan any) *MessageStream {
 	return &MessageStream{
 		client:         client,
 		ctx:            ctx,
