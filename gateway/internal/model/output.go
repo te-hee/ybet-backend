@@ -1,36 +1,35 @@
 package model
 
-type Output struct{
-	Success bool
+type Output struct {
+	Success bool `json:"success"`
 }
 
-type OutputError struct{
+type OutputError struct {
 	Output
-	Error string
+	Error string `json:"error"`
 }
 
-type OutputGetHistory struct{
+type OutputGetHistory struct {
 	Output
-	Messages []Message
+	Messages []Message `json:"messages"`
 }
 
-type OutputSendMessege struct{
+type OutputSendMessege struct {
 	Output
 }
 
-func NewOutput(success bool) (Output){
+func NewOutput(success bool) Output {
 	return Output{Success: success}
 }
 
-func NewOutputError(errorMessage string) (OutputError){
+func NewOutputError(errorMessage string) OutputError {
 	return OutputError{Output: NewOutput(false), Error: errorMessage}
 }
 
-func NewOutputGetHistory(messages []Message) (OutputGetHistory){
+func NewOutputGetHistory(messages []Message) OutputGetHistory {
 	return OutputGetHistory{Output: NewOutput(true), Messages: messages}
 }
 
-func NewOutputSendMessage() (OutputSendMessege){
+func NewOutputSendMessage() OutputSendMessege {
 	return OutputSendMessege{Output: NewOutput(true)}
 }
-
