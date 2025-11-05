@@ -7,7 +7,6 @@ import (
 	messagestream "broadcast/internal/messageStream"
 	"broadcast/internal/models"
 	"context"
-	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -19,7 +18,6 @@ import (
 
 func main() {
 	config.InitFlags()
-	flag.Parse()
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
