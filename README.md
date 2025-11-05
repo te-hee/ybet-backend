@@ -23,7 +23,6 @@ Our skilled team:
 **ogólny format**
 ```json
 {
-    "target": "string",
     "type": "messageType",
     "payload": "systemMessage | userMessage | userListUpdate"
 }

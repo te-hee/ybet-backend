@@ -49,11 +49,10 @@ func (m *MessageStream) Listen() error {
 			return err
 		}
 		msg := models.Message{
-			Target: "",
-			Type:   "UserMessage",
+			Type: models.UserMessageType,
 			Payload: models.UserMessage{
 				Id:        receivedMessage.GetUuid(),
-				Message:   receivedMessage.GetContent(),
+				Content:   receivedMessage.GetContent(),
 				Timestamp: uint64(receivedMessage.GetTimestamp()),
 			},
 		}
