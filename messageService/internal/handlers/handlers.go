@@ -4,10 +4,9 @@ import (
 	messagev1 "backend/proto/message/v1"
 	"context"
 	"log"
+	"messageService/config"
 	"messageService/internal/models"
 	"messageService/internal/service"
-	"os"
-	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,21 +21,16 @@ type MessageServer struct {
 }
 
 func NewMessageServer(serviceLayer *service.ServiceLayer) *MessageServer {
-	bufferSize := 100
-	if customBuffer := os.Getenv("BUFFER_SIZE"); customBuffer != "" {
-		buf, err := strconv.Atoi(customBuffer)
-		if err == nil {
-			bufferSize = buf
-		}
-	}
-	log.Printf("buffer size :3 : %v", bufferSize)
 	return &MessageServer{
 		service:          serviceLayer,
-		messageBroadcast: make(chan models.Message, bufferSize),
+		messageBroadcast: make(chan models.Message, *config.CustomBuffer),
 	}
 }
 
 func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessageRequest) (*messagev1.MessageActionResponse, error) {
+	if !*config.NoAuth {
+
+	}
 	msg := models.Message{
 		Id:        uuid.New(),
 		Message:   req.Content,

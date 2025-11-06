@@ -3,6 +3,7 @@ package main
 import (
 	messagev1 "backend/proto/message/v1"
 	"log"
+	"messageService/config"
 	"messageService/internal/handlers"
 	"messageService/internal/repository"
 	"messageService/internal/service"
@@ -15,19 +16,20 @@ import (
 )
 
 func main() {
-	err := loadConfig()
+	err := loadEnvFile()
 	if err != nil {
 		log.Fatalf("error loading env variables ;c: %v", err)
 	}
+	config.LoadConfig()
+
 	msgServer := newApp()
 
 	grpcServer := grpc.NewServer()
 	messagev1.RegisterMessageServiceServer(grpcServer, msgServer)
 
-	environment := os.Getenv("ENV")
-	log.Printf("running on env ^w^: %s", environment)
+	log.Printf("running on env ^w^: %s", *config.Env)
 
-	if environment == "dev" || environment == "" {
+	if *config.Env == "dev" || *config.Env == "" {
 		reflection.Register(grpcServer)
 	}
 
@@ -50,7 +52,7 @@ func newApp() *handlers.MessageServer {
 	return server
 }
 
-func loadConfig() error {
+func loadEnvFile() error {
 	_, err := os.Stat(".env")
 	if err == nil {
 		err := godotenv.Load(".env")

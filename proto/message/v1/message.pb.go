@@ -27,6 +27,7 @@ type Message struct {
 	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
+	JwtToken      string                 `protobuf:"bytes,4,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -82,9 +83,16 @@ func (x *Message) GetTimestamp() int64 {
 	return 0
 }
 
+func (x *Message) GetJwtToken() string {
+	if x != nil {
+		return x.JwtToken
+	}
+	return ""
+}
+
 type SendMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	JwtToken      string                 `protobuf:"bytes,1,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -120,9 +128,9 @@ func (*SendMessageRequest) Descriptor() ([]byte, []int) {
 	return file_proto_message_v1_message_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SendMessageRequest) GetUserId() string {
+func (x *SendMessageRequest) GetJwtToken() string {
 	if x != nil {
-		return x.UserId
+		return x.JwtToken
 	}
 	return ""
 }
@@ -136,7 +144,7 @@ func (x *SendMessageRequest) GetContent() string {
 
 type EditMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	JwtToken      string                 `protobuf:"bytes,1,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	MessageId     string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -173,9 +181,9 @@ func (*EditMessageRequest) Descriptor() ([]byte, []int) {
 	return file_proto_message_v1_message_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *EditMessageRequest) GetUserId() string {
+func (x *EditMessageRequest) GetJwtToken() string {
 	if x != nil {
-		return x.UserId
+		return x.JwtToken
 	}
 	return ""
 }
@@ -196,7 +204,7 @@ func (x *EditMessageRequest) GetContent() string {
 
 type DeleteMessageRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	JwtToken      string                 `protobuf:"bytes,1,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	MessageId     string                 `protobuf:"bytes,2,opt,name=message_id,json=messageId,proto3" json:"message_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -232,9 +240,9 @@ func (*DeleteMessageRequest) Descriptor() ([]byte, []int) {
 	return file_proto_message_v1_message_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *DeleteMessageRequest) GetUserId() string {
+func (x *DeleteMessageRequest) GetJwtToken() string {
 	if x != nil {
-		return x.UserId
+		return x.JwtToken
 	}
 	return ""
 }
@@ -301,6 +309,8 @@ func (x *MessageActionResponse) GetError() string {
 type GetHistoryRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Limit         uint32                 `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Start         uint32                 `protobuf:"varint,2,opt,name=start,proto3" json:"start,omitempty"`
+	JwtToken      string                 `protobuf:"bytes,3,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -340,6 +350,20 @@ func (x *GetHistoryRequest) GetLimit() uint32 {
 		return x.Limit
 	}
 	return 0
+}
+
+func (x *GetHistoryRequest) GetStart() uint32 {
+	if x != nil {
+		return x.Start
+	}
+	return 0
+}
+
+func (x *GetHistoryRequest) GetJwtToken() string {
+	if x != nil {
+		return x.JwtToken
+	}
+	return ""
 }
 
 type GetHistoryResponse struct {
@@ -391,28 +415,31 @@ var File_proto_message_v1_message_proto protoreflect.FileDescriptor
 const file_proto_message_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"\x1eproto/message/v1/message.proto\x12\n" +
-	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"U\n" +
+	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"r\n" +
 	"\aMessage\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\"G\n" +
-	"\x12SendMessageRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
-	"\acontent\x18\x02 \x01(\tR\acontent\"f\n" +
-	"\x12EditMessageRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1b\n" +
+	"\tjwt_token\x18\x04 \x01(\tR\bjwtToken\"K\n" +
+	"\x12SendMessageRequest\x12\x1b\n" +
+	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken\x12\x18\n" +
+	"\acontent\x18\x02 \x01(\tR\acontent\"j\n" +
+	"\x12EditMessageRequest\x12\x1b\n" +
+	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x02 \x01(\tR\tmessageId\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"N\n" +
-	"\x14DeleteMessageRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1d\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\"R\n" +
+	"\x14DeleteMessageRequest\x12\x1b\n" +
+	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken\x12\x1d\n" +
 	"\n" +
 	"message_id\x18\x02 \x01(\tR\tmessageId\"G\n" +
 	"\x15MessageActionResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x14\n" +
-	"\x05error\x18\x02 \x01(\tR\x05error\")\n" +
+	"\x05error\x18\x02 \x01(\tR\x05error\"\\\n" +
 	"\x11GetHistoryRequest\x12\x14\n" +
-	"\x05limit\x18\x01 \x01(\rR\x05limit\"E\n" +
+	"\x05limit\x18\x01 \x01(\rR\x05limit\x12\x14\n" +
+	"\x05start\x18\x02 \x01(\rR\x05start\x12\x1b\n" +
+	"\tjwt_token\x18\x03 \x01(\tR\bjwtToken\"E\n" +
 	"\x12GetHistoryResponse\x12/\n" +
 	"\bmessages\x18\x01 \x03(\v2\x13.message.v1.MessageR\bmessages2\xd1\x03\n" +
 	"\x0eMessageService\x12P\n" +
