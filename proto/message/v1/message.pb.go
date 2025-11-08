@@ -27,7 +27,8 @@ type Message struct {
 	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
 	Content       string                 `protobuf:"bytes,2,opt,name=content,proto3" json:"content,omitempty"`
 	Timestamp     int64                  `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	JwtToken      string                 `protobuf:"bytes,4,opt,name=jwt_token,json=jwtToken,proto3" json:"jwt_token,omitempty"`
+	UserId        string                 `protobuf:"bytes,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -83,9 +84,16 @@ func (x *Message) GetTimestamp() int64 {
 	return 0
 }
 
-func (x *Message) GetJwtToken() string {
+func (x *Message) GetUserId() string {
 	if x != nil {
-		return x.JwtToken
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *Message) GetUsername() string {
+	if x != nil {
+		return x.Username
 	}
 	return ""
 }
@@ -415,12 +423,13 @@ var File_proto_message_v1_message_proto protoreflect.FileDescriptor
 const file_proto_message_v1_message_proto_rawDesc = "" +
 	"\n" +
 	"\x1eproto/message/v1/message.proto\x12\n" +
-	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"r\n" +
+	"message.v1\x1a\x1bgoogle/protobuf/empty.proto\"\x8a\x01\n" +
 	"\aMessage\x12\x12\n" +
 	"\x04uuid\x18\x01 \x01(\tR\x04uuid\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\x12\x1c\n" +
-	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x1b\n" +
-	"\tjwt_token\x18\x04 \x01(\tR\bjwtToken\"K\n" +
+	"\ttimestamp\x18\x03 \x01(\x03R\ttimestamp\x12\x17\n" +
+	"\auser_id\x18\x04 \x01(\tR\x06userId\x12\x1a\n" +
+	"\busername\x18\x05 \x01(\tR\busername\"K\n" +
 	"\x12SendMessageRequest\x12\x1b\n" +
 	"\tjwt_token\x18\x01 \x01(\tR\bjwtToken\x12\x18\n" +
 	"\acontent\x18\x02 \x01(\tR\acontent\"j\n" +
