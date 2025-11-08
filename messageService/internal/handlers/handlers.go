@@ -28,10 +28,13 @@ func NewMessageServer(serviceLayer *service.ServiceLayer) *MessageServer {
 }
 
 func (m *MessageServer) SendMessage(_ context.Context, req *messagev1.SendMessageRequest) (*messagev1.MessageActionResponse, error) {
-	if !*config.NoAuth {
-
+	userId, username, err := login()
+	if err != nil {
+		return nil, err
 	}
 	msg := models.Message{
+		Username:  username,
+		UserId:    userId,
 		Id:        uuid.New(),
 		Message:   req.Content,
 		Timestamp: time.Now().Unix(),
@@ -73,4 +76,20 @@ func (m *MessageServer) StreamMessages(_ *emptypb.Empty, stream grpc.ServerStrea
 
 func (m *MessageServer) Ready(_ context.Context, _ *emptypb.Empty) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
+}
+
+func verifyJWT() (models.UserClaims, error) {
+	return models.UserClaims{}, nil
+}
+
+func login() (userId uuid.UUID, username string, err error) {
+	if !*config.NoAuth {
+		claims, err := verifyJWT()
+		if err != nil {
+			return uuid.Nil, "", err
+		}
+		return claims.Uuid, claims.Username, nil
+	}
+	randomUuid := uuid.New()
+	return randomUuid, randomUuid.String(), nil
 }
