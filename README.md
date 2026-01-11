@@ -59,6 +59,13 @@ type = payload type
 
 - /messages
 
+### env
+
+Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są używane defultowe wartości
+
+- MESSAGE_SERVICE_IP - ip do message servicu z portem (ip:port)
+- GATEWAY_PORT - Port na jaki będzie nasłuchiwał gateway
+
 ### /messages
 
 #### Metody
@@ -78,7 +85,7 @@ type = payload type
  ```
 - POST:
 ```json
-{"content": treść wiadomości w stringu}
+{"content": "treść wiadomości w stringu"}
 ```
 
 #### Ciała responsów
