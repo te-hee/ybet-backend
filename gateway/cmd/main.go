@@ -9,18 +9,42 @@ import (
 	"gateway/internal/service"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/rs/cors"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+
+	"github.com/joho/godotenv"
 )
 
-var (
-	serverAddr = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
-)
+
+func getEnvs() (string, string){
+	err := godotenv.Load()
+
+	var messageServiceIp string;
+	var gatewayPort string;
+
+	if err != nil{
+		log.Println(".env not found switching do default values")
+		messageServiceIp = "localhost:50051"
+		gatewayPort = "8080"
+
+	} else{
+		log.Println("Running on .env")
+		messageServiceIp = os.Getenv("MESSAGE_SERVICE_IP")
+		gatewayPort = os.Getenv("GATEWAY_PORT")
+	}
+	return messageServiceIp, gatewayPort
+}
 
 func main() {
+
+	messageServiceIp, gatewayPort := getEnvs()
+
+	var serverAddr = flag.String("addr", messageServiceIp, "The server address in the format of host:port")
+
 	mux := http.NewServeMux()
 
 	flag.Parse()
@@ -42,7 +66,14 @@ func main() {
 
 	mux.HandleFunc("/messages", handler.HandleMesseges)
 	handlerCORS := cors.Default().Handler(mux)
-	if err := http.ListenAndServe(":8080", handlerCORS); err != nil {
+
+	log.Println("Running server on port:", gatewayPort)
+	log.Println("Connected to message service on:", messageServiceIp)
+
+	if err := http.ListenAndServe(":"+gatewayPort, handlerCORS); err != nil {
+
 		panic(err)
 	}
+
+
 }

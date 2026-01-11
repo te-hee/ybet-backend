@@ -6,7 +6,6 @@ import (
 	"gateway/internal/service"
 	"log"
 	"net/http"
-	"time"
 	"github.com/gorilla/schema"
 )
 
@@ -37,7 +36,7 @@ func writeError(w http.ResponseWriter, status int, message string) {
 }
 
 func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method, r.Body, time.Now())
+	log.Println(r.Method)
 	w.Header().Set("Content-type", "application/json")
 	switch r.Method {
 	case http.MethodGet:
