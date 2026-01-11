@@ -23,20 +23,14 @@ import (
 func getEnvs() (string, string){
 	err := godotenv.Load()
 
-	var messageServiceIp string;
-	var gatewayPort string;
-
 	if err != nil{
 		log.Println(".env not found switching do default values")
-		messageServiceIp = "localhost:50051"
-		gatewayPort = "8080"
+		return "localhost:50051", "8080"
 
 	} else{
 		log.Println("Running on .env")
-		messageServiceIp = os.Getenv("MESSAGE_SERVICE_IP")
-		gatewayPort = os.Getenv("GATEWAY_PORT")
+		return  os.Getenv("MESSAGE_SERVICE_IP"), os.Getenv("GATEWAY_PORT")
 	}
-	return messageServiceIp, gatewayPort
 }
 
 func main() {
