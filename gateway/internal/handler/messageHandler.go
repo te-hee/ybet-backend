@@ -6,7 +6,9 @@ import (
 	"gateway/internal/service"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
+
 	"github.com/gorilla/schema"
 )
 
@@ -14,7 +16,7 @@ type MessageHander struct {
 	service *service.MessageService
 }
 
-var decoder  = schema.NewDecoder() // decoder for url params
+var decoder = schema.NewDecoder() // decoder for url params
 
 var badRequest = model.NewOutputError("Bad Request")
 
@@ -52,14 +54,21 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.Request) {
 	var input model.InputHistory
 
-		if err := decoder.Decode(&input, r.URL.Query()); err != nil {
-			writeError(w, http.StatusBadRequest, "Bad request")
-			log.Println(err)
-			return
-		}
+	if err := decoder.Decode(&input, r.URL.Query()); err != nil {
+		writeError(w, http.StatusBadRequest, "Bad request")
+		log.Println(err)
+		return
+	}
+
+	values, _ := url.ParseQuery(r.URL.RawQuery)
+	if _, exists := values["limit"]; !exists {
+		writeError(w, http.StatusBadRequest, "Bad request")
+		log.Println("No `limit` in query")
+		return
+	}
 
 	if input.Limit < 1 {
-		errorMessage := "Non positiv number passed"
+		errorMessage := "Invalid `limit` value"
 		writeError(w, http.StatusBadRequest, errorMessage)
 		log.Println(errorMessage)
 		return
