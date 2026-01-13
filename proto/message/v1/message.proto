@@ -15,18 +15,18 @@ message Message {
 }
 
 message SendMessageRequest {
-  string jwt_token = 1;
+  string user_id = 1;
   string content = 2;    
 }
 
 message EditMessageRequest {
-  string jwt_token = 1;
+  string user_id = 1;
   string message_id = 2;
   string content = 3;    
 }
 
 message DeleteMessageRequest {
-  string jwt_token = 1;
+  string user_id = 1;
   string message_id = 2;
 }
 
@@ -36,13 +36,13 @@ message MessageActionResponse {
 }
 
 message GetHistoryRequest {
-  uint32 limit = 1;       
-  uint32 start = 2;
-  string jwt_token = 3;
+  string user_id = 1;
+  uint32 limit = 2;
+  uint32 start = 3;
 }
 
 message GetHistoryResponse {
-  repeated Message messages = 1;  
+  repeated Message messages = 1;
 }
 
 

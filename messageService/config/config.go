@@ -11,6 +11,7 @@ var (
 	Env          *string
 	CustomBuffer *int
 	NoAuth       *bool
+	AuthKey      string
 )
 
 func LoadConfig() {
@@ -26,6 +27,7 @@ func loadEnvs() {
 	envEnv := os.Getenv("ENV")
 	bufferEnv := os.Getenv("BUFFER_SIZE")
 	noAuthEnv := os.Getenv("NO_AUTH")
+	authKey := os.Getenv("AUTH_KEY")
 
 	switch envEnv {
 	case "dev":
@@ -45,5 +47,9 @@ func loadEnvs() {
 		*NoAuth = true
 	case "false":
 		*NoAuth = false
+		if authKey == "" {
+			panic("NO_AUTH is set to false but auth key is not provided")
+		}
+		AuthKey = authKey
 	}
 }
