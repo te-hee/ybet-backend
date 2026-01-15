@@ -5,7 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gateway/config"
 	"gateway/internal/model"
+
+	"google.golang.org/grpc/metadata"
 )
 
 type RepositoryGrpc struct {
@@ -48,7 +51,10 @@ func (r *RepositoryGrpc) SendMessage(content string) error {
 	}
 	//tymczasowe rzeczy będą podane przez JWT
 
-	response, err := r.grpcClient.SendMessage(r.ctx, request)
+	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
+	ctxWithAuth := metadata.NewOutgoingContext(r.ctx, md)
+
+	response, err := r.grpcClient.SendMessage(ctxWithAuth, request)
 	if err != nil {
 		return fmt.Errorf("error sending message: %v", err)
 	}

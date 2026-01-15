@@ -11,4 +11,4 @@ RUN go build -o gateway ./cmd
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/gateway/gateway .
-CMD ["./gateway", "--addr=message-service:50051"]
+CMD ["./gateway"]

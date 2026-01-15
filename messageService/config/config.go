@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	Env          *string
-	CustomBuffer *int
-	NoAuth       *bool
-	AuthKey      string
-	NATSAddress  string
+	Env           *string
+	CustomBuffer  *int
+	NoAuth        *bool
+	ServiceApiKey string
+	NATSAddress   string
 )
 
 func LoadConfig() {
@@ -28,7 +28,7 @@ func loadEnvs() {
 	envEnv := os.Getenv("ENV")
 	bufferEnv := os.Getenv("BUFFER_SIZE")
 	noAuthEnv := os.Getenv("NO_AUTH")
-	authKey := os.Getenv("AUTH_KEY")
+	authKey := os.Getenv("SERVICE_API_KEY")
 	natsAddress := os.Getenv("NATS_ADDRESS")
 
 	switch envEnv {
@@ -54,12 +54,12 @@ func loadEnvs() {
 		if authKey == "" {
 			panic("NO_AUTH is set to false but auth key is not provided")
 		}
-		AuthKey = authKey
+		ServiceApiKey = authKey
 	}
 
 	if natsAddress == "" {
 		NATSAddress = "localhost:4222"
-	}else{
+	} else {
 		NATSAddress = natsAddress
 	}
 }
