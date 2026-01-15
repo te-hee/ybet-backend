@@ -7,11 +7,11 @@ import (
 )
 
 type Message struct {
-	Username  string
-	UserId    uuid.UUID
-	Id        uuid.UUID
-	Message   string
-	Timestamp int64
+	Username  string    `json:"username,omitempty"`
+	UserId    uuid.UUID `json:"user_id,omitempty"`
+	Id        uuid.UUID `json:"id,omitempty"`
+	Message   string    `json:"message,omitempty"`
+	Timestamp int64     `json:"timestamp,omitempty"`
 }
 
 func (m Message) ToProto() *messagev1.Message {

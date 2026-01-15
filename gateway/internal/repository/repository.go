@@ -4,6 +4,7 @@ import (
 	v1 "backend/proto/message/v1"
 	"context"
 	"errors"
+	"fmt"
 	"gateway/internal/model"
 )
 
@@ -41,10 +42,16 @@ func (r *RepositoryGrpc) GetMessageHistory(limit uint32) ([]model.Message, error
 
 func (r *RepositoryGrpc) SendMessage(content string) error {
 	request := &v1.SendMessageRequest{
-		Content: content,
+		UserId:   "8f0d8552-d07d-432d-9018-8374313f9151", //tymczasowe
+		Username: "admin",                                //tymczasowe
+		Content:  content,
 	}
+	//tymczasowe rzeczy będą podane przez JWT
 
 	response, err := r.grpcClient.SendMessage(r.ctx, request)
+	if err != nil {
+		return fmt.Errorf("error sending message: %v", err)
+	}
 
 	if !response.Success {
 		return errors.New(response.String())

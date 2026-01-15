@@ -8,11 +8,12 @@ import (
 var (
 	NoAuth     *bool
 	ServerAddr *string
+	NatsAddr   *string
 )
 
 func InitFlags() {
 	NoAuth = flag.Bool("noAuth", false, "true or false")
-	ServerAddr = flag.String("addr", "localhost:50051", "The server address in the format of host:port")
+	NatsAddr = flag.String("addr", "localhost:4222", "address of NATS")
 
 	flag.Parse()
 
@@ -30,7 +31,7 @@ func InitEnv() {
 		}
 	}
 
-	if val := os.Getenv("ADDR"); val != "" {
-		*ServerAddr = val
+	if val := os.Getenv("NATS_ADDRESS"); val != "" {
+		*NatsAddr = val
 	}
 }

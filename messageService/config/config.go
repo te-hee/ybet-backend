@@ -12,6 +12,7 @@ var (
 	CustomBuffer *int
 	NoAuth       *bool
 	AuthKey      string
+	NATSAddress  string
 )
 
 func LoadConfig() {
@@ -28,6 +29,7 @@ func loadEnvs() {
 	bufferEnv := os.Getenv("BUFFER_SIZE")
 	noAuthEnv := os.Getenv("NO_AUTH")
 	authKey := os.Getenv("AUTH_KEY")
+	natsAddress := os.Getenv("NATS_ADDRESS")
 
 	switch envEnv {
 	case "dev":
@@ -36,10 +38,12 @@ func loadEnvs() {
 
 	if bufferEnv != "" {
 		size, err := strconv.Atoi(bufferEnv)
-		if err == nil {
+		if err != nil {
+			log.Printf("can't convert %s to number. setting buffer to 100", bufferEnv)
+			*CustomBuffer = 100
+		} else {
 			*CustomBuffer = size
 		}
-		log.Printf("can't convert %s to number. setting buffer to 100", bufferEnv)
 	}
 
 	switch noAuthEnv {
@@ -51,5 +55,11 @@ func loadEnvs() {
 			panic("NO_AUTH is set to false but auth key is not provided")
 		}
 		AuthKey = authKey
+	}
+
+	if natsAddress == "" {
+		NATSAddress = "localhost:4222"
+	}else{
+		NATSAddress = natsAddress
 	}
 }

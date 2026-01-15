@@ -11,6 +11,12 @@ services:
       - ENV=dev
       - BUFFER_SIZE=100
       - STORAGE_TYPE=memory
+      - NO_AUTH=true
+      - NATS_ADDRESS=nats:4222
+    depends_on:
+      - nats
+    networks:
+      - app-network
 
   broadcast-service:
     build:
@@ -22,8 +28,12 @@ services:
     environment:
       - ENV=dev
       - NO_AUTH=true
+      - NATS_ADDRESS=nats:4222
     depends_on:
       - message-service
+      - nats
+    networks:
+      - app-network
 
   gateway-service:
     build:
@@ -37,4 +47,19 @@ services:
     depends_on:
       - message-service
       - broadcast-service
+    networks:
+      - app-network
+
+  nats:
+    image: nats:latest
+    ports:
+      - "4222:4222" 
+      - "8222:8222" 
+    command: ["-js", "-m", "8222"]
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
 

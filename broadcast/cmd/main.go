@@ -1,41 +1,41 @@
 package main
 
 import (
-	v1 "backend/proto/message/v1"
 	"broadcast/config"
 	"broadcast/internal/handler"
 	messagestream "broadcast/internal/messageStream"
 	"broadcast/internal/models"
-	"context"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"github.com/rs/cors"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
 	config.InitFlags()
-	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	var nc *nats.Conn
+	var err error
 
-	grpcClient, err := grpc.NewClient(*config.ServerAddr, opts...)
-	if err != nil {
-		log.Panicf("Failed to create gRPC client: %v", err)
+	for {
+		log.Printf("trying to connect on %v", *config.NatsAddr)
+		nc, err = nats.Connect(*config.NatsAddr)
+		if err != nil {
+			log.Printf("NATS error: %v. Retrying in 5 seconds...", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		log.Println("connected to NATS")
+		break
 	}
-	defer grpcClient.Close()
-
-	client := v1.NewMessageServiceClient(grpcClient)
-	log.Println("new message service client")
+	js, _ := jetstream.New(nc)
 
 	msgChannel := make(chan models.Message, 100)
 
-	messageStream := messagestream.NewMessageStreamClient(client, ctx, msgChannel)
+	messageStream := messagestream.NewMessageStreamClient(js, msgChannel)
 
 	wsHandler := handler.NewWebsocketHandler(msgChannel)
 

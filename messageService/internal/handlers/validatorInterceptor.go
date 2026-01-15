@@ -33,6 +33,9 @@ func validate(ctx context.Context) error {
 		if !ok {
 			status.Errorf(codes.PermissionDenied, "auth key not provided in metadata")
 		}
+		if len(key) <= 0 {
+			status.Errorf(codes.PermissionDenied, "auth key not provided in metadata")
+		}
 		if key[0] != config.AuthKey {
 			status.Errorf(codes.Unauthenticated, "wrong auth key provided")
 		}

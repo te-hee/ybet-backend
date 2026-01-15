@@ -1,64 +1,63 @@
 package messagestream
 
 import (
-	v1 "backend/proto/message/v1"
 	"broadcast/internal/models"
 	"context"
+	"encoding/json"
 	"log"
 
-	"google.golang.org/protobuf/types/known/emptypb"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 )
 
 type MessageStream struct {
-	client         v1.MessageServiceClient
 	ctx            context.Context
 	messageChannel chan models.Message
+	js             jetstream.JetStream
 }
 
-func NewMessageStreamClient(client v1.MessageServiceClient, ctx context.Context, channel chan models.Message) *MessageStream {
+func NewMessageStreamClient(js jetstream.JetStream, channel chan models.Message) *MessageStream {
 	return &MessageStream{
-		client:         client,
-		ctx:            ctx,
+		js:             js,
 		messageChannel: channel,
 	}
 }
 
 func (m *MessageStream) Listen() error {
 	log.Println("run Listen()")
-	empty := &emptypb.Empty{}
-	stream, err := m.client.StreamMessages(m.ctx, empty)
+
+	_, err := m.js.Conn().QueueSubscribe(
+		"chat.messages.created",
+		"BROADCAST_QUEUE",
+		func(msg *nats.Msg) {
+			var recvMsg models.UserMessage
+			err := json.Unmarshal(msg.Data, &recvMsg)
+			if err != nil {
+				log.Printf("error unmarshaling json :c : %v", err)
+
+				msg.Term()
+			}
+			log.Printf("received a new message: %v", recvMsg)
+
+			m.messageChannel <- models.Message{
+				Type:    models.UserMessageType,
+				Payload: recvMsg,
+			}
+
+			log.Println("message sent to the channel")
+
+			if err := msg.Ack(); err != nil {
+				log.Printf("Error sending ACK: %v", err)
+			}
+		},
+	)
+
 	if err != nil {
-		log.Printf("error creating stream: %v", err)
+		log.Printf("error creating subscription: %v", err)
 		return err
 	}
-	_, err = m.client.Ready(m.ctx, &emptypb.Empty{})
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := stream.CloseSend(); err != nil {
-			log.Printf("Error closing stream: %v", err)
-		}
-	}()
 
-	for {
-		log.Println("listening for messages")
-		receivedMessage, err := stream.Recv()
-		if err != nil {
-			log.Printf("Error receiving message: %v", err)
-			return err
-		}
-		msg := models.Message{
-			Type: models.UserMessageType,
-			Payload: models.UserMessage{
-				Id:        receivedMessage.GetUuid(),
-				Content:   receivedMessage.GetContent(),
-				Timestamp: uint64(receivedMessage.GetTimestamp()),
-			},
-		}
-		log.Printf("got message: %v", msg)
+	log.Println("listening for messages via NATS...")
 
-		m.messageChannel <- msg
-		log.Println("sent messages thorugh channel")
-	}
+	select {}
 }
