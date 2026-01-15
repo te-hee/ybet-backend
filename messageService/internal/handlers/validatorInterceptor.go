@@ -3,7 +3,9 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"log"
 	"messageService/config"
+	"strings"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -28,16 +30,17 @@ func validate(ctx context.Context) error {
 		if !ok {
 			return status.Errorf(codes.DataLoss, "Failed to retrieve gRPC metadata")
 		}
-		key, ok := md["key"]
+		authHeader := md.Get("authorization")
+		log.Println(md)
 
-		if !ok {
-			status.Errorf(codes.PermissionDenied, "auth key not provided in metadata")
+		if len(authHeader) == 0 {
+			return status.Errorf(codes.PermissionDenied, "auth key not provided in metadata")
 		}
-		if len(key) <= 0 {
-			status.Errorf(codes.PermissionDenied, "auth key not provided in metadata")
-		}
-		if key[0] != config.AuthKey {
-			status.Errorf(codes.Unauthenticated, "wrong auth key provided")
+
+		key := strings.TrimPrefix(authHeader[0], "Bearer ")
+
+		if key != config.ServiceApiKey {
+			return status.Errorf(codes.Unauthenticated, "wrong auth key provided")
 		}
 	}
 	return nil

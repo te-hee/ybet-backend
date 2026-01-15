@@ -15,9 +15,9 @@ func InitFlags() {
 	NoAuth = flag.Bool("noAuth", false, "true or false")
 	NatsAddr = flag.String("addr", "localhost:4222", "address of NATS")
 
+	InitEnv()
 	flag.Parse()
 
-	InitEnv()
 }
 
 func InitEnv() {

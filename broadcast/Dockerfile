@@ -11,4 +11,4 @@ RUN go build -o broadcast ./cmd
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/broadcast/broadcast .
-CMD ["./broadcast", "--addr=message-service:50051"]
+CMD ["./broadcast"]

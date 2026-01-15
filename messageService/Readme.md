@@ -62,10 +62,10 @@ default - false
 env var - `NO_AUTH`
 flag --noauth true
 
-**auth key**
+**service api key**
 string
 key that message service expects when auth is turned on
-env var - `AUTH_KEY`
+env var - `SERVICE_API_KEY`
 
 **NATS address**
 string

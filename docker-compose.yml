@@ -13,6 +13,7 @@ services:
       - STORAGE_TYPE=memory
       - NO_AUTH=true
       - NATS_ADDRESS=nats:4222
+      - SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
     depends_on:
       - nats
     networks:
@@ -44,6 +45,8 @@ services:
       - "8080:8080"
     environment:
       - ENV=dev
+      - MESSAGE_SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
+      - MESSAGE_SERVICE_IP=message-service:50051
     depends_on:
       - message-service
       - broadcast-service
