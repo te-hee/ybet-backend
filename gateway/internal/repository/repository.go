@@ -28,7 +28,9 @@ func (r *RepositoryGrpc) GetMessageHistory(limit uint32) ([]model.Message, error
 	request := &v1.GetHistoryRequest{
 		Limit: limit,
 	}
-	response, err := r.grpcClient.GetHistory(r.ctx, request)
+	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
+	ctxWithAuth := metadata.NewOutgoingContext(r.ctx, md)
+	response, err := r.grpcClient.GetHistory(ctxWithAuth, request)
 
 	messages := []model.Message{}
 
