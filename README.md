@@ -38,6 +38,8 @@ type = payload type
 ```json
 {
     "uuid": "string",
+    "user_id": "string",
+    "username": "string",
     "content": "string",
     "timestamp": "uint"
 }
