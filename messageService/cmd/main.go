@@ -2,32 +2,52 @@ package main
 
 import (
 	messagev1 "backend/proto/message/v1"
+	"context"
 	"log"
+	"messageService/config"
 	"messageService/internal/handlers"
 	"messageService/internal/repository"
 	"messageService/internal/service"
 	"net"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
 
 func main() {
-	err := loadConfig()
+	err := loadEnvFile()
+	log.Println("abababa")
 	if err != nil {
 		log.Fatalf("error loading env variables ;c: %v", err)
 	}
-	msgServer := newApp()
+	config.LoadConfig()
+	var nc *nats.Conn
 
-	grpcServer := grpc.NewServer()
+	for {
+		log.Printf("trying to connect on %v", config.NATSAddress)
+		nc, err = nats.Connect(config.NATSAddress)
+		if err != nil {
+			log.Printf("NATS error: %v. Retrying in 5 seconds...", err)
+			time.Sleep(5 * time.Second)
+			continue
+		}
+		log.Println("connected to NATS")
+		break
+	}
+
+	msgServer := newApp(nc)
+
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
 	messagev1.RegisterMessageServiceServer(grpcServer, msgServer)
 
-	environment := os.Getenv("ENV")
-	log.Printf("running on env ^w^: %s", environment)
+	log.Printf("running on env ^w^: %s", *config.Env)
 
-	if environment == "dev" || environment == "" {
+	if *config.Env == "dev" || *config.Env == "" {
 		reflection.Register(grpcServer)
 	}
 
@@ -42,15 +62,21 @@ func main() {
 	}
 }
 
-func newApp() *handlers.MessageServer {
+func newApp(nc *nats.Conn) *handlers.MessageServer {
+	js, _ := jetstream.New(nc)
+	js.CreateStream(context.Background(), jetstream.StreamConfig{
+		Name:     "CHAT_MESSAGES",
+		Subjects: []string{"chat.messages.>"},
+	})
+
 	repo := repository.NewInMemoryRepo()
 	sLayer := service.New(repo)
-	server := handlers.NewMessageServer(sLayer)
+	server := handlers.NewMessageServer(sLayer, js)
 
 	return server
 }
 
-func loadConfig() error {
+func loadEnvFile() error {
 	_, err := os.Stat(".env")
 	if err == nil {
 		err := godotenv.Load(".env")

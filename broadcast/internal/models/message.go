@@ -19,8 +19,10 @@ type Message struct {
 
 type UserMessage struct {
 	Id        string `json:"id"`
-	Content   string `json:"content"`
+	Username  string `json:"username"`
+	Message   string `json:"message"`
 	Timestamp uint64 `json:"timestamp"`
+	UserId    string `json:"user_id"`
 }
 
 type SystemMessage struct {
