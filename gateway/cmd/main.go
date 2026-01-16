@@ -5,6 +5,7 @@ import (
 	"context"
 	"flag"
 	"gateway/config"
+	"gateway/internal/auth"
 	"gateway/internal/handler"
 	"gateway/internal/repository"
 	"gateway/internal/service"
@@ -39,7 +40,12 @@ func main() {
 	service := service.NewMessageService(repo)
 	handler := handler.NewMessageHandler(service)
 
-	mux.HandleFunc("/messages", handler.HandleMesseges)
+	authClient := auth.NewMinimalClient()
+	authService := auth.NewMinimalService(authClient)
+	authHandler := auth.NewAuthHandler(authService)
+
+	mux.HandleFunc("/messages", auth.AuthMiddleware(handler.HandleMesseges))
+	mux.HandleFunc("/login", authHandler.HandleLogin)
 	handlerCORS := cors.Default().Handler(mux)
 
 	log.Println("Running server on port:", *config.GatewayPort)
