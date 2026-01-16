@@ -1,9 +1,11 @@
 package model
 
-type InputMessage struct{
-	Conetnt string `json:"content"`
+type InputMessage struct {
+	Content  string `json:"content"`
+	UserId   string
+	Username string
 }
 
-type InputHistory struct{
+type InputHistory struct {
 	Limit uint32 `json:"limit"`
 }

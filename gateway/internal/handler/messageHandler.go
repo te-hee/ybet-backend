@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"gateway/internal/auth"
 	"gateway/internal/model"
 	"gateway/internal/service"
 	"log"
@@ -26,7 +27,7 @@ func NewMessageHandler(service *service.MessageService) *MessageHander {
 	return messageHander
 }
 
-func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Println("Error encoding response:", err)
@@ -93,14 +94,21 @@ func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if input.Conetnt == "" {
+	if input.Content == "" {
 		errorMessage := "Content was not passed or its empty"
 		writeError(w, http.StatusBadRequest, errorMessage)
 		log.Println(errorMessage)
 		return
 	}
+	userId, username := auth.UserFromContext(r.Context())
+	if userId == "" || username == "" {
+		http.Error(w, "user information missing", http.StatusUnauthorized)
+		return
+	}
 
-	err := h.service.SendMessage(input.Conetnt)
+	input.UserId = userId
+	input.Username = username
+	err := h.service.SendMessage(input)
 
 	if err != nil {
 		writeError(w, http.StatusBadRequest, "Bad request")
