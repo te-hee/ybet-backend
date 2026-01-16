@@ -21,7 +21,7 @@ func (s *MessageService) GetMessageHistory(limit uint32) ([]model.Message, error
 	return users, err
 }
 
-func (s *MessageService) SendMessage(content string) error {
-	err := s.repo.SendMessage(content)
+func (s *MessageService) SendMessage(message model.InputMessage) error {
+	err := s.repo.SendMessage(message)
 	return err
 }

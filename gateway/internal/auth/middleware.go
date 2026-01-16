@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"broadcast/config"
 	"context"
 	"fmt"
+	"gateway/config"
 	"gateway/internal/model"
 	"net/http"
 	"os"
@@ -62,4 +62,10 @@ func verifyJwt(tokenString string) (*model.UserClaims, error) {
 	} else {
 		return nil, fmt.Errorf("unsupported claim type")
 	}
+}
+
+func UserFromContext(ctx context.Context) (string, string) {
+	userID, _ := ctx.Value(UserIDKey).(string)
+	username, _ := ctx.Value(UsernameKey).(string)
+	return userID, username
 }

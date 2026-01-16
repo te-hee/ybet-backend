@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gateway/config"
 	"gateway/internal/model"
+	"log"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -45,13 +46,14 @@ func (r *RepositoryGrpc) GetMessageHistory(limit uint32) ([]model.Message, error
 	return messages, err
 }
 
-func (r *RepositoryGrpc) SendMessage(content string) error {
+func (r *RepositoryGrpc) SendMessage(message model.InputMessage) error {
+	log.Println(message)
 	request := &v1.SendMessageRequest{
-		UserId:   "8f0d8552-d07d-432d-9018-8374313f9151", //tymczasowe
-		Username: "admin",                                //tymczasowe
-		Content:  content,
+		UserId:   message.UserId,
+		Username: message.Username,
+		Content:  message.Content,
 	}
-	//tymczasowe rzeczy będą podane przez JWT
+	log.Println(request)
 
 	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
 	ctxWithAuth := metadata.NewOutgoingContext(r.ctx, md)

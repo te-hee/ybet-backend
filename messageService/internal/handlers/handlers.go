@@ -34,6 +34,8 @@ func NewMessageServer(serviceLayer *service.ServiceLayer, js jetstream.JetStream
 }
 
 func (m *MessageServer) SendMessage(ctx context.Context, req *messagev1.SendMessageRequest) (*messagev1.MessageActionResponse, error) {
+	log.Println(req.UserId)
+	log.Println(req.Username)
 	userId, err := uuid.Parse(req.UserId)
 	if err != nil {
 		return &messagev1.MessageActionResponse{Success: false}, status.Errorf(codes.InvalidArgument, "failed parsing user id")
