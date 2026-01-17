@@ -25,3 +25,13 @@ func (s *MessageService) SendMessage(message model.InputMessage) error {
 	err := s.repo.SendMessage(message)
 	return err
 }
+
+func (s *MessageService) EditMessage(editRequest model.EditMessageRequest) error {
+	err := s.repo.EditMessage(editRequest)
+	return err
+}
+
+func (s *MessageService) DeleteMessage(deleteRequest model.DeleteMessageRequest) error {
+	err := s.repo.DeleteMessage(deleteRequest)
+	return err
+}

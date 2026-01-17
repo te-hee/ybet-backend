@@ -70,8 +70,8 @@ func newApp(nc *nats.Conn) *handlers.MessageServer {
 	})
 
 	repo := repository.NewInMemoryRepo()
-	sLayer := service.New(repo)
-	server := handlers.NewMessageServer(sLayer, js)
+	sLayer := service.New(repo, js)
+	server := handlers.NewMessageServer(sLayer)
 
 	return server
 }

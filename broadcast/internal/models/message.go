@@ -10,6 +10,8 @@ const (
 	SystemMessageType  MessageType = "systemMessage"
 	UserMessageType    MessageType = "userMessage"
 	UserListUpdateType MessageType = "userListUpdate"
+	EditMessageType    MessageType = "editMessage"
+	DeleteMessageType  MessageType = "deleteMessage"
 )
 
 type Message struct {
@@ -18,11 +20,20 @@ type Message struct {
 }
 
 type UserMessage struct {
-	Id        string `json:"id"`
+	Id        string `json:"message_id"`
 	Username  string `json:"username"`
 	Message   string `json:"message"`
 	Timestamp uint64 `json:"timestamp"`
 	UserId    string `json:"user_id"`
+}
+
+type EditMessage struct {
+	MessageId string `json:"message_id,omitempty"`
+	Content   string `json:"content,omitempty"`
+}
+
+type DeleteMessage struct {
+	MessageId string `json:"message_id,omitempty"`
 }
 
 type SystemMessage struct {
@@ -31,5 +42,5 @@ type SystemMessage struct {
 
 type UserListUpdate struct {
 	Action ListUpdateAction `json:"action"`
-	Uuid   string           `json:"uuid"`
+	Uuid   string           `json:"user_id"`
 }

@@ -69,3 +69,33 @@ func (r *RepositoryGrpc) SendMessage(message model.InputMessage) error {
 
 	return err
 }
+
+func (r *RepositoryGrpc) EditMessage(editRequest model.EditMessageRequest) (_ error) {
+	request := &v1.EditMessageRequest{
+		UserId:    editRequest.UserId,
+		MessageId: editRequest.MessageId,
+		Content:   editRequest.Content,
+	}
+	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
+	ctxWithAuth := metadata.NewOutgoingContext(r.ctx, md)
+
+	_, err := r.grpcClient.EditMessage(ctxWithAuth, request)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+func (r *RepositoryGrpc) DeleteMessage(deleteRequest model.DeleteMessageRequest) (_ error) {
+	request := &v1.DeleteMessageRequest{
+		UserId:    deleteRequest.UserId,
+		MessageId: deleteRequest.MessageId,
+	}
+	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
+	ctxWithAuth := metadata.NewOutgoingContext(r.ctx, md)
+
+	_, err := r.grpcClient.DeleteMessage(ctxWithAuth, request)
+	if err != nil {
+		return err
+	}
+	return nil
+}

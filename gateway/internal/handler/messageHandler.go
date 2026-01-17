@@ -46,9 +46,64 @@ func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
 		h.HandleGetMessageHistory(w, r)
 	case http.MethodPost:
 		h.HandleSendMessage(w, r)
+	case http.MethodPatch:
+		h.HandleUpdateMessage(w, r)
+	case http.MethodDelete:
+		h.HandleDeleteMessage(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Request) {
+	var input model.EditMessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Bad json", http.StatusBadRequest)
+		return
+	}
+	userId, _ := auth.UserFromContext(r.Context())
+
+	if userId == "" {
+		http.Error(w, "Missing user information", http.StatusUnauthorized)
+		return
+	}
+
+	input.UserId = userId
+
+	err := h.service.EditMessage(input)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, model.NewOutput(true))
+}
+
+func (h *MessageHander) HandleDeleteMessage(w http.ResponseWriter, r *http.Request) {
+	var input model.DeleteMessageRequest
+	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
+		http.Error(w, "Bad json", http.StatusBadRequest)
+		return
+	}
+	userId, _ := auth.UserFromContext(r.Context())
+
+	if userId == "" {
+		http.Error(w, "Missing user information", http.StatusUnauthorized)
+		return
+	}
+
+	input.UserId = userId
+
+	err := h.service.DeleteMessage(input)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, model.NewOutput(true))
+
 }
 
 func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.Request) {
