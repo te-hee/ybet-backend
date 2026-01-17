@@ -11,6 +11,9 @@ Our skilled team:
 *wyłączanie*
 `docker compose down`
 
+## architektura
+`Client -> Gateway -> (Auth / Message) -> NATS -> Broadcast -> WebSocket`
+
 ## Web socket
 - port: 8081
 - endpoint: /ws
@@ -21,11 +24,37 @@ Our skilled team:
 ```json
 {
     "type": "messageType",
-    "payload": "systemMessage | userMessage | userListUpdate"
+    "payload": "message"
 }
 ```
 type = payload type
-**messageType**: `'systemMessage'|'userMessage'|'userListUpdate'`
+**messageType**: `'systemMessage'|'userMessage'|'userListUpdate'|'editMessage'|'deleteMessage'`
+
+**userMessage**
+```json
+{
+    "message_id": "string",
+    "user_id": "string",
+    "username": "string",
+    "content": "string",
+    "timestamp": "uint"
+}
+```
+
+**editMessage**
+```json
+{
+    "message_id": "string",
+    "content": "string"
+}
+```
+
+**deleteMessage**
+```json
+{
+    "message_id": "string",
+}
+```
 
 **systemMessage**
 ```json
@@ -34,23 +63,11 @@ type = payload type
 }
 ```
 
-**userMessage**
-```json
-{
-    "uuid": "string",
-    "user_id": "string",
-    "username": "string",
-    "content": "string",
-    "timestamp": "uint"
-}
-
-```
-
 **userListUpdate**
 ```json
 {
     "action": "'connect'|'disconnect'"
-    "uuid": "string"
+    "user_id": "string"
 }
 ```
 
@@ -82,12 +99,12 @@ Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są 
 
 #### Ciała requestów
 - POST:
-```
+```json
 {"username": "cutie"}
 ```
 #### Ciała responsów
 - POST:
-```
+```json
 {"token": "token jwt"}
 ```
 
@@ -97,12 +114,14 @@ Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są 
 
 - GET - Pobieranie historii wiadomości
 - POST - Wysyłanie wiadomości
+- PATCH - Edytowanie wiadomości
+- DELETE - usuwanie wiadomości
 
 #### Ciała requestów
 
 - GET:
  ```
-(protocol)://(domain):(port)/messgaes?limit=(num)
+(protocol)://(domain):(port)/messages?limit=(num)
  ```
  so for running localy
  ```
@@ -111,6 +130,14 @@ Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są 
 - POST:
 ```json
 {"content": "treść wiadomości w stringu"}
+```
+- PATCH
+```json
+{"message_id": "uuid", "content": "string"}
+```
+- DELETE
+```json
+{"message_id": "uuid"}
 ```
 
 #### Ciała responsów
@@ -124,6 +151,7 @@ Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są 
 
     ```json
     {"success": false, "error": "wiadomość errora w stringu"}
+    ```
 - POST:  
     W prypadku powodzenia:
 
@@ -135,4 +163,11 @@ Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są 
     ```json
     {"success": false, "error": "wiadomość errora w stringu"}
     ```
-
+- PATCH:
+    ```json
+    {"success": true}
+    ```
+- DELETE:
+    ```json
+    {"success": true}
+    ```

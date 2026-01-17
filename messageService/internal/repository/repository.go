@@ -1,26 +1,81 @@
 package repository
 
 import (
+	"fmt"
 	"messageService/internal/models"
+	"sort"
+	"sync"
 )
 
 type MemoryRepo struct {
-	messages []models.Message
+	messages map[string]models.Message
+	mu       sync.RWMutex
 }
 
 func NewInMemoryRepo() *MemoryRepo {
 	return &MemoryRepo{
-		messages: make([]models.Message, 0),
+		messages: make(map[string]models.Message, 0),
 	}
 }
 
 func (r *MemoryRepo) SaveMessage(message models.Message) {
-	r.messages = append(r.messages, message)
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.messages[message.Id.String()] = message
 }
 func (r *MemoryRepo) GetMessages(limit int) []models.Message {
-	length := len(r.messages)
-	if limit > length {
-		limit = length
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	allMessages := make([]models.Message, 0, len(r.messages))
+	for _, v := range r.messages {
+		allMessages = append(allMessages, v)
 	}
-	return r.messages[length-limit : length]
+
+	sort.Slice(allMessages, func(i, j int) bool {
+		return allMessages[i].Timestamp < allMessages[j].Timestamp
+	})
+
+	if limit > len(allMessages) {
+		limit = len(allMessages)
+	}
+
+	start := len(allMessages) - limit
+	return allMessages[start:]
+}
+
+func (r *MemoryRepo) EditMessage(editMessage models.EditMessage) (_ error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var message models.Message
+	var ok bool
+	if message, ok = r.messages[editMessage.MessageId]; !ok {
+		return fmt.Errorf("message does not exist")
+	}
+
+	if message.UserId.String() != editMessage.UserId {
+		return fmt.Errorf("Not matching user id's")
+	}
+	message.Message = editMessage.Content
+	r.messages[message.Id.String()] = message
+
+	return nil
+}
+func (r *MemoryRepo) DeleteMessage(deleteMessage models.DeleteMessage) (_ error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var message models.Message
+	var ok bool
+	if message, ok = r.messages[deleteMessage.MessageId]; !ok {
+		return fmt.Errorf("message does not exist")
+	}
+
+	if message.UserId.String() != deleteMessage.UserId {
+		return fmt.Errorf("Not matching user id's")
+	}
+	delete(r.messages, message.Id.String())
+	return nil
 }

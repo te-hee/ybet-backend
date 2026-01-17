@@ -7,7 +7,7 @@ import (
 )
 
 type Message struct {
-	Uuid      uuid.UUID `json:"uuid"`
+	MessageId uuid.UUID `json:"message_id"`
 	Content   string    `json:"content"`
 	Timestamp uint64    `json:"timestamp"`
 	UserId    uuid.UUID `json:"userId"`
@@ -19,13 +19,13 @@ func ProtoToModel(protoMessage *v1.Message) (*Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	userId, err := uuid.Parse(protoMessage.Uuid)
+	userId, err := uuid.Parse(protoMessage.UserId)
 	if err != nil {
 		return nil, err
 	}
 
 	message := &Message{
-		Uuid:      id,
+		MessageId: id,
 		Content:   protoMessage.Content,
 		Timestamp: uint64(protoMessage.Timestamp),
 		UserId:    userId,
@@ -35,7 +35,7 @@ func ProtoToModel(protoMessage *v1.Message) (*Message, error) {
 
 func ModelToProto(message Message) *v1.Message {
 	protoMessage := &v1.Message{
-		Uuid:      message.Uuid.String(),
+		Uuid:      message.MessageId.String(),
 		Content:   message.Content,
 		Timestamp: int64(message.Timestamp),
 		UserId:    message.UserId.String(),

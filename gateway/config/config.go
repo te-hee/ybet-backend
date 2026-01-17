@@ -52,7 +52,5 @@ func InitEnv() {
 		case "false":
 			*NoAuth = false
 		}
-	} else {
-		*MessageServiceKey = "cute"
 	}
 }
