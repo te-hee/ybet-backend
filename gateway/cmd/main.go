@@ -44,6 +44,12 @@ func main() {
 	authService := auth.NewMinimalService(authClient)
 	authHandler := auth.NewAuthHandler(authService)
 
+	healthHandler := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status": "ok"}`))
+	}
+
+	mux.HandleFunc("/health", healthHandler)
 	mux.HandleFunc("/messages", auth.AuthMiddleware(handler.HandleMesseges))
 	mux.HandleFunc("/login", authHandler.HandleLogin)
 	handlerCORS := cors.Default().Handler(mux)

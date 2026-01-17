@@ -1,0 +1,27 @@
+# .dockerignore
+
+# Ignoruj gita
+.git
+.gitignore
+
+# Ignoruj pliki środowiskowe (bezpieczeństwo!)
+.env
+.env.*
+
+# Ignoruj lokalne buildy i binarki (żeby nie kopiować ciężkich plików)
+bin/
+build/
+*.exe
+*.test
+main
+messageService/messageService
+gateway/gateway
+broadcast/broadcast
+
+# Ignoruj lokalne pomysły IDE
+.vscode
+.idea
+*.swp
+
+# Ignoruj folder testów e2e (nie potrzebujemy ich w obrazie produkcyjnym)
+tests/

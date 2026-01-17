@@ -1,8 +1,14 @@
-go 1.25.3
+go 1.25.5
 
 use (
 	./broadcast
 	./gateway
-	./proto
 	./messageService
+	./proto
+	./tests
+)
+
+replace (
+	google.golang.org/genproto => google.golang.org/genproto v0.0.0-20260114163908-3f89685c29c3
+	google.golang.org/grpc => google.golang.org/grpc v1.78.0
 )

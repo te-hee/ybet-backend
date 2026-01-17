@@ -21,7 +21,6 @@ import (
 
 func main() {
 	err := loadEnvFile()
-	log.Println("abababa")
 	if err != nil {
 		log.Fatalf("error loading env variables ;c: %v", err)
 	}
