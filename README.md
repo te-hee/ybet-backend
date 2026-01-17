@@ -1,173 +1,255 @@
-# Ybet - **Y**apping **b**ut **E**nd **T**o (End encrypted)
+# Ybet - **Y**apping **b**ut **E**nd **T**o
+> End-to-end encrypted chat system
 
-Our skilled team:
+## Nasz zespół
 - Adas :*
-- **hipo :333**
-- **Dawid =^w^=**
+- hipo :333
+- Dawid =^w^=
+- ishu uwu
 
-## jak z tym pracować?
-*włączanie*
-`docker compose up --build -d`
-*wyłączanie*
-`docker compose down`
+---
 
-## architektura
-`Client -> Gateway -> (Auth / Message) -> NATS -> Broadcast -> WebSocket`
+## Uruchamianie
 
-## Web socket
-- port: 8081
-- endpoint: /ws
+Start:
+```
 
-### /ws?token=jwt_token
-#### Dane
-**ogólny format**
+docker compose up --build -d
+
+```
+
+Stop:
+```
+
+docker compose down
+
+```
+
+---
+
+## Architektura
+
+```
+
+Client
+→ Gateway
+→ Auth / Message
+→ NATS
+→ Broadcast
+→ WebSocket
+
+```
+
+---
+
+## WebSocket
+
+Endpoint:
+```
+
+ws://<host>:8081/ws?token=<jwt>
+
+````
+
+Format wiadomości:
 ```json
 {
-    "type": "messageType",
-    "payload": "message"
+  "type": "<type>",
+  "payload": { ... }
 }
-```
-type = payload type
-**messageType**: `'systemMessage'|'userMessage'|'userListUpdate'|'editMessage'|'deleteMessage'`
+````
 
-**userMessage**
+Typy `type`:
+
+* `userMessage`
+* `editMessage`
+* `deleteMessage`
+* `systemMessage`
+* `userListUpdate`
+
+### userMessage
+
 ```json
 {
-    "message_id": "string",
-    "user_id": "string",
-    "username": "string",
-    "content": "string",
-    "timestamp": "uint"
+  "message_id": "string",
+  "user_id": "string",
+  "username": "string",
+  "content": "string",
+  "timestamp": number
 }
 ```
 
-**editMessage**
+### editMessage
+
 ```json
 {
-    "message_id": "string",
-    "content": "string"
+  "message_id": "string",
+  "content": "string"
 }
 ```
 
-**deleteMessage**
+### deleteMessage
+
 ```json
 {
-    "message_id": "string",
+  "message_id": "string"
 }
 ```
 
-**systemMessage**
+### systemMessage
+
 ```json
 {
-    "content": "string",
+  "content": "string"
 }
 ```
 
-**userListUpdate**
+### userListUpdate
+
 ```json
 {
-    "action": "'connect'|'disconnect'"
-    "user_id": "string"
+  "action": "connect | disconnect",
+  "user_id": "string"
 }
 ```
 
-## gateway
+---
 
-- /messages
-- /login
+## Gateway API
 
-### autoryzacja
-1. wyślij POST na `/login` `{"username":"cute"}`
-2. dostajesz spowrotem `{"token":"token jwt"}`
-3. przy każdym requeście ustaw header `Authorization` i wartość `Bearer <token>`
+Endpointy:
 
-Żeby wyłączyć autoryzację użyj flagi `--noauth` lub zmienna środowiskowa `NO_AUTH` na `true`
-wtedy każda wiadomość będzie od jedengo użytkownika testowego
+* POST   /login
+* GET    /messages
+* POST   /messages
+* PATCH  /messages
+* DELETE /messages
 
-### env
+### Autoryzacja
 
-Przykładaowa env'ka znajudje się w katalogu gateway w przypadku jej braku są używane defultowe wartości
+POST `/login`
+Request:
 
-- MESSAGE_SERVICE_IP - ip do message servicu z portem (ip:port)
-- GATEWAY_PORT - Port na jaki będzie nasłuchiwał gateway
-- NO_AUTH - wyłącza autoryzację
-
-### /login
-
-#### Metody
-- POST - zalogowanie się do systemu (tylko username)
-
-#### Ciała requestów
-- POST:
 ```json
-{"username": "cutie"}
-```
-#### Ciała responsów
-- POST:
-```json
-{"token": "token jwt"}
+{
+  "username": "string"
+}
 ```
 
-### /messages
+Response:
 
-#### Metody
-
-- GET - Pobieranie historii wiadomości
-- POST - Wysyłanie wiadomości
-- PATCH - Edytowanie wiadomości
-- DELETE - usuwanie wiadomości
-
-#### Ciała requestów
-
-- GET:
- ```
-(protocol)://(domain):(port)/messages?limit=(num)
- ```
- so for running localy
- ```
- http://localhost:8080/messages?limit=(num)
- ```
-- POST:
 ```json
-{"content": "treść wiadomości w stringu"}
-```
-- PATCH
-```json
-{"message_id": "uuid", "content": "string"}
-```
-- DELETE
-```json
-{"message_id": "uuid"}
+{
+  "token": "<jwt>"
+}
 ```
 
-#### Ciała responsów
-- GET:  
-    W prypadku powodzenia:
+Header dla requestów (poza /login):
 
-    ```json
-    {"success": true, "messages": [{"uuid": "string", "content": "string", "timestamp": "uint"}, ...]}
-    ```
-    W przypadku niepowodzenia:
+```
+Authorization: Bearer <jwt>
+```
 
-    ```json
-    {"success": false, "error": "wiadomość errora w stringu"}
-    ```
-- POST:  
-    W prypadku powodzenia:
+#### Tryb testowy (bez auth)
 
-    ```json
-    {"success": true}
-    ```
-    W przypadku niepowodzenia:
+Flaga `--noauth` lub env `NO_AUTH=true`
+Wszystkie akcje wykonywane jako użytkownik testowy.
 
-    ```json
-    {"success": false, "error": "wiadomość errora w stringu"}
-    ```
-- PATCH:
-    ```json
-    {"success": true}
-    ```
-- DELETE:
-    ```json
-    {"success": true}
-    ```
+---
+
+## Zmienne środowiskowe
+
+| Zmienna            | Typ     | Opis                              |
+| ------------------ | ------- | --------------------------------- |
+| MESSAGE_SERVICE_IP | string  | adres message service (`ip:port`) |
+| GATEWAY_PORT       | number  | port gatewaya                     |
+| NO_AUTH            | boolean | wyłączenie autoryzacji            |
+
+---
+
+## /messages
+
+### GET
+
+```
+/messages?limit=<number>
+```
+
+Response success:
+
+```json
+{
+  "success": true,
+  "messages": [
+    {
+      "uuid": "string",
+      "content": "string",
+      "timestamp": number
+    }
+  ]
+}
+```
+
+Response error:
+
+```json
+{
+  "success": false,
+  "error": "string"
+}
+```
+
+### POST
+
+Request:
+
+```json
+{
+  "content": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true
+}
+```
+
+### PATCH
+
+Request:
+
+```json
+{
+  "message_id": "string",
+  "content": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true
+}
+```
+
+### DELETE
+
+Request:
+
+```json
+{
+  "message_id": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true
+}
+```
