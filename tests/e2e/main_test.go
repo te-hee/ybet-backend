@@ -3,6 +3,7 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"testing"
@@ -47,6 +48,9 @@ func TestMain(m *testing.M) {
 	}
 
 	code := m.Run()
+
+	log.Println("time for logs cutie :3")
+	time.Sleep(time.Second * 30)
 
 	fmt.Println("cleaning docker compose...")
 	if err := stack.Down(context.Background(), compose.RemoveOrphans(true), compose.RemoveImagesLocal); err != nil {
