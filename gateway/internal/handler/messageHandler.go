@@ -73,7 +73,7 @@ func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Reque
 	err := h.service.EditMessage(input)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (h *MessageHander) HandleDeleteMessage(w http.ResponseWriter, r *http.Reque
 	err := h.service.DeleteMessage(input)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -166,8 +166,7 @@ func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request
 	err := h.service.SendMessage(input)
 
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Bad request")
-		log.Print(err)
+		writeError(w, http.StatusBadRequest, "message service error")
 		return
 	}
 
