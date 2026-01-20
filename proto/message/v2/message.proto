@@ -27,11 +27,13 @@ message SendMessageResponse{
 
 message EditMessageRequest{
   string message_id = 1;
-  string content = 2;
+  string user_id = 2;
+  string content = 3;
 }
 
 message DeleteMessageRequest{
   string message_id = 1;
+  string user_id = 2;
 }
 
 message GetHistoryRequest{

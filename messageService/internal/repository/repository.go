@@ -1,10 +1,12 @@
 package repository
 
 import (
-	"fmt"
 	"messageService/internal/models"
 	"sort"
 	"sync"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type MemoryRepo struct {
@@ -52,11 +54,11 @@ func (r *MemoryRepo) EditMessage(editMessage models.EditMessage) (_ error) {
 	var message models.Message
 	var ok bool
 	if message, ok = r.messages[editMessage.MessageId]; !ok {
-		return fmt.Errorf("message does not exist")
+		return status.Error(codes.NotFound, "message does not exist :c")
 	}
 
 	if message.UserId.String() != editMessage.UserId {
-		return fmt.Errorf("Not matching user id's")
+		return status.Error(codes.Unauthenticated, "not your message! >:c")
 	}
 	message.Message = editMessage.Content
 	r.messages[message.Id.String()] = message
@@ -70,11 +72,11 @@ func (r *MemoryRepo) DeleteMessage(deleteMessage models.DeleteMessage) (_ error)
 	var message models.Message
 	var ok bool
 	if message, ok = r.messages[deleteMessage.MessageId]; !ok {
-		return fmt.Errorf("message does not exist")
+		return status.Error(codes.NotFound, "message does not exist :c")
 	}
 
 	if message.UserId.String() != deleteMessage.UserId {
-		return fmt.Errorf("Not matching user id's")
+		return status.Error(codes.Unauthenticated, "not your message! >:c")
 	}
 	delete(r.messages, message.Id.String())
 	return nil

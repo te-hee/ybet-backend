@@ -1,10 +1,11 @@
 package main
 
 import (
-	messagev1 "backend/proto/message/v1"
+	messagev2 "backend/proto/message/v2"
 	"context"
 	"log"
 	"messageService/config"
+	"messageService/internal/dispatcher"
 	"messageService/internal/handlers"
 	"messageService/internal/repository"
 	"messageService/internal/service"
@@ -42,7 +43,7 @@ func main() {
 	msgServer := newApp(nc)
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
-	messagev1.RegisterMessageServiceServer(grpcServer, msgServer)
+	messagev2.RegisterMessageServiceServer(grpcServer, msgServer)
 
 	log.Printf("running on env ^w^: %s", *config.Env)
 
@@ -68,8 +69,10 @@ func newApp(nc *nats.Conn) *handlers.MessageServer {
 		Subjects: []string{"chat.messages.>"},
 	})
 
+	dispatcher := dispatcher.NewDispatcher(js)
+
 	repo := repository.NewInMemoryRepo()
-	sLayer := service.New(repo, js)
+	sLayer := service.New(repo, dispatcher)
 	server := handlers.NewMessageServer(sLayer)
 
 	return server
