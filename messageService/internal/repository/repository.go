@@ -58,7 +58,7 @@ func (r *MemoryRepo) EditMessage(editMessage models.EditMessage) (_ error) {
 	}
 
 	if message.UserId.String() != editMessage.UserId {
-		return status.Error(codes.Unauthenticated, "not your message! >:c")
+		return status.Error(codes.PermissionDenied, "not your message! >:c")
 	}
 	message.Message = editMessage.Content
 	r.messages[message.Id.String()] = message
@@ -76,7 +76,7 @@ func (r *MemoryRepo) DeleteMessage(deleteMessage models.DeleteMessage) (_ error)
 	}
 
 	if message.UserId.String() != deleteMessage.UserId {
-		return status.Error(codes.Unauthenticated, "not your message! >:c")
+		return status.Error(codes.PermissionDenied, "not your message! >:c")
 	}
 	delete(r.messages, message.Id.String())
 	return nil

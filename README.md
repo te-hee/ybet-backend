@@ -182,9 +182,11 @@ Response success:
   "success": true,
   "messages": [
     {
-      "uuid": "string",
-      "content": "string",
-      "timestamp": number
+        "message_id": "string",
+        "user_id": "string",
+        "username": "string,"
+        "content": "string",
+        "timestamp": number
     }
   ]
 }
@@ -213,7 +215,8 @@ Response:
 
 ```json
 {
-  "success": true
+    "message_id": "string",
+    "timestamp": number
 }
 ```
 
@@ -228,14 +231,12 @@ Request:
 }
 ```
 
-Response:
-
-```json
-{
-  "success": true
-}
-```
-
+Status codes:
+- **200** - message succesfully edited
+- **400** - wrong json provided
+- **401** - provide jwt token in `Authorization` header in formay `Bearer <token>`
+- **403** - not authorized to edit that message
+- **500** - internal server error or unknown error
 ### DELETE
 
 Request:
@@ -246,10 +247,9 @@ Request:
 }
 ```
 
-Response:
-
-```json
-{
-  "success": true
-}
-```
+Status codes:
+- **200** - message succesfully deleted
+- **400** - wrong json provided
+- **401** - provide jwt token in `Authorization` header in formay `Bearer <token>`
+- **403** - not authorized to delete that message
+- **500** - internal server error or unknown error

@@ -40,7 +40,9 @@ func main() {
 		break
 	}
 
-	msgServer := newApp(nc)
+	msgServer, dispatcher := newApp(nc)
+	go dispatcher.Start()
+	defer dispatcher.Close()
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
 	messagev2.RegisterMessageServiceServer(grpcServer, msgServer)
@@ -62,7 +64,7 @@ func main() {
 	}
 }
 
-func newApp(nc *nats.Conn) *handlers.MessageServer {
+func newApp(nc *nats.Conn) (*handlers.MessageServer, *dispatcher.Dispatcher) {
 	js, _ := jetstream.New(nc)
 	js.CreateStream(context.Background(), jetstream.StreamConfig{
 		Name:     "CHAT_MESSAGES",
@@ -75,7 +77,7 @@ func newApp(nc *nats.Conn) *handlers.MessageServer {
 	sLayer := service.New(repo, dispatcher)
 	server := handlers.NewMessageServer(sLayer)
 
-	return server
+	return server, dispatcher
 }
 
 func loadEnvFile() error {

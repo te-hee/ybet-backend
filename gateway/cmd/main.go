@@ -1,13 +1,13 @@
 package main
 
 import (
-	v1 "backend/proto/message/v1"
+	messagev2 "backend/proto/message/v2"
 	"context"
 	"flag"
 	"gateway/config"
 	"gateway/internal/auth"
+	"gateway/internal/client"
 	"gateway/internal/handler"
-	"gateway/internal/repository"
 	"gateway/internal/service"
 	"log"
 	"net/http"
@@ -33,11 +33,11 @@ func main() {
 		log.Panic(err)
 	}
 
-	client := v1.NewMessageServiceClient(grpcClient)
+	gprcClient := messagev2.NewMessageServiceClient(grpcClient)
 
 	ctx := context.Background()
-	repo := repository.NewRepositoryGrpc(client, ctx)
-	service := service.NewMessageService(repo)
+	msgClient := client.NewMessageServiceClient(ctx, gprcClient)
+	service := service.NewMessageService(msgClient)
 	handler := handler.NewMessageHandler(service)
 
 	authClient := auth.NewMinimalClient()
