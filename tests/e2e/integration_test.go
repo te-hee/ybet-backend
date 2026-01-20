@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"testing"
 	"time"
 
@@ -14,30 +15,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func sendTestMessage(url, token, content string) (*http.Response, error) {
-	body, _ := json.Marshal(map[string]string{
-		"content": content,
-	})
-
-	req, err := http.NewRequest(http.MethodPost, url+"/messages", bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	if token != "" {
-		req.Header.Add("Authorization", "Bearer "+token)
-	}
-	req.Header.Add("Content-Type", "application/json")
-
-	return http.DefaultClient.Do(req)
-}
-
 func TestMessageLifecycle(t *testing.T) {
+	user1 := "cutie"
+	user2 := "boykisser"
 	//create users
-	cutieToken, err := loginAndGetToken("cutie", "password123")
+	cutieToken, err := loginAndGetToken(user1, "password123")
 	require.NoError(t, err, "cutie failed to login")
 
-	boykisserToken, err := loginAndGetToken("boykisser", "password123")
+	boykisserToken, err := loginAndGetToken(user2, "password123")
 	require.NoError(t, err, "boykisser failed to login")
 
 	//connect users to the websocket
@@ -66,6 +51,7 @@ func TestMessageLifecycle(t *testing.T) {
 		//extract payload
 		payload := event["payload"].(map[string]any)
 		assert.Equal(t, message, payload["content"])
+		assert.Equal(t, user1, payload["username"])
 	})
 
 	t.Run("cutie edits message", func(t *testing.T) {
@@ -95,11 +81,67 @@ func TestMessageLifecycle(t *testing.T) {
 		payload := event["payload"].(map[string]any)
 		assert.Equal(t, messageID, payload["message_id"])
 	})
+	t.Run("boykisser sends message and cutie reads history", func(t *testing.T) {
+		message := "Haiii! >w<"
+		resp, _ := sendTestMessage(GatewayURL, boykisserToken, message)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var respBody map[string]string
+		json.NewDecoder(resp.Body).Decode(&respBody)
+		messageID = respBody["message_id"]
+
+		resp, _ = sendGetHistoryRequest(GatewayURL, cutieToken, 10)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+
+		var messagesResp map[string]any
+		json.NewDecoder(resp.Body).Decode(&messagesResp)
+		messages := messagesResp["messages"].([]any)
+		assert.Equal(t, 1, len(messages))
+
+		returnedMessage := messages[0].(map[string]any)
+
+		assert.Equal(t, messageID, returnedMessage["message_id"])
+		assert.Equal(t, message, returnedMessage["content"])
+	})
+}
+
+func sendGetHistoryRequest(url, token string, limit int) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, url+"/messages?limit="+strconv.Itoa(limit), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	if token != "" {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	return http.DefaultClient.Do(req)
+}
+
+func sendTestMessage(url, token, content string) (*http.Response, error) {
+	body, _ := json.Marshal(map[string]string{
+		"content": content,
+	})
+
+	req, err := http.NewRequest(http.MethodPost, url+"/messages", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, err
+	}
+
+	if token != "" {
+		req.Header.Add("Authorization", "Bearer "+token)
+	}
+	req.Header.Add("Content-Type", "application/json")
+
+	return http.DefaultClient.Do(req)
 }
 
 func connectToWebSocket(token string) (*websocket.Conn, *http.Response, error) {
+	header := http.Header{}
+	header.Add("Authorization", "Bearer "+token)
 	dialer := websocket.DefaultDialer
-	return dialer.Dial(WSURL+"?token="+token, http.Header{})
+	return dialer.Dial(WSURL, header)
 }
 
 func loginAndGetToken(username, password string) (string, error) {

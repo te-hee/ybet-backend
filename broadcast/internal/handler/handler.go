@@ -1,15 +1,12 @@
 package handler
 
 import (
-	"broadcast/config"
 	"broadcast/internal/models"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -47,46 +44,31 @@ func writeError(w http.ResponseWriter, status int, message string) {
 }
 
 func (websockethandler *WebSocketHandler) WsHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.UserClaims
-	var err error
-	if !*config.NoAuth {
-		token := r.URL.Query().Get("token")
-
-		if token == "" {
-			writeError(w, http.StatusUnauthorized, "provide token in url param")
-		}
-		user, err = verifyJWT()
-		if err != nil {
-			writeError(w, 401, "error verifying JWT token :c")
-		}
-
-	} else {
-		user.Uuid = uuid.New()
-		user.Username = fmt.Sprintf("user%d", len(websockethandler.conns))
-	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		//Tymon :3
 		writeError(w, 418, "I'm a teapot")
 	}
+	userId, username := UserFromContext(r.Context())
 	websockethandler.mutex.Lock()
 
-	websockethandler.conns[user.Uuid.String()] = conn
+	websockethandler.conns[userId] = conn
 
 	websockethandler.mutex.Unlock()
 
 	websockethandler.messageChannel <- models.Message{
 		Type: models.UserListUpdateType,
 		Payload: models.UserListUpdate{
-			Action: models.Connect,
-			Uuid:   user.Uuid.String(),
+			Action:   models.Connect,
+			UserId:   userId,
+			Username: username,
 		},
 	}
 
 	websockethandler.messageChannel <- models.Message{
 		Type: models.SystemMessageType,
 		Payload: models.SystemMessage{
-			Content: fmt.Sprintf("%s joined! :3", user.Username),
+			Content: username + " joined! Haiiii >w< :333",
 		},
 	}
 
@@ -111,8 +93,4 @@ func (websockethandler *WebSocketHandler) BroadcastMessages() {
 		log.Println("sent message to all cons")
 
 	}
-}
-
-func verifyJWT() (models.UserClaims, error) {
-	return models.UserClaims{}, nil
 }
