@@ -35,18 +35,18 @@ func sendTestMessage(url, token, content string) (*http.Response, error) {
 func TestMessageLifecycle(t *testing.T) {
 	//create users
 	cutieToken, err := loginAndGetToken("cutie", "password123")
-	assert.NoError(t, err, "cutie failed to login")
+	require.NoError(t, err, "cutie failed to login")
 
 	boykisserToken, err := loginAndGetToken("boykisser", "password123")
-	assert.NoError(t, err, "boykisser failed to login")
+	require.NoError(t, err, "boykisser failed to login")
 
 	//connect users to the websocket
 	cutieWs, _, err := connectToWebSocket(cutieToken)
-	assert.NoError(t, err, "cutie failed to connect to the web socket")
+	require.NoError(t, err, "cutie failed to connect to the web socket")
 	defer cutieWs.Close()
 
 	boykisserWS, _, err := connectToWebSocket(boykisserToken)
-	assert.NoError(t, err, "boykisser failed to connect to the web socket")
+	require.NoError(t, err, "boykisser failed to connect to the web socket")
 	defer boykisserWS.Close()
 
 	var messageID string
@@ -54,7 +54,7 @@ func TestMessageLifecycle(t *testing.T) {
 	t.Run("cutie sends message", func(t *testing.T) {
 		message := "Haiiii! >w<"
 		resp, _ := sendTestMessage(GatewayURL, cutieToken, message)
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
 
 		var respBody map[string]string
 		json.NewDecoder(resp.Body).Decode(&respBody)

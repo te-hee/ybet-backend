@@ -1,10 +1,11 @@
 package main
 
 import (
-	messagev1 "backend/proto/message/v1"
+	messagev2 "backend/proto/message/v2"
 	"context"
 	"log"
 	"messageService/config"
+	"messageService/internal/dispatcher"
 	"messageService/internal/handlers"
 	"messageService/internal/repository"
 	"messageService/internal/service"
@@ -39,10 +40,12 @@ func main() {
 		break
 	}
 
-	msgServer := newApp(nc)
+	msgServer, dispatcher := newApp(nc)
+	go dispatcher.Start()
+	defer dispatcher.Close()
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
-	messagev1.RegisterMessageServiceServer(grpcServer, msgServer)
+	messagev2.RegisterMessageServiceServer(grpcServer, msgServer)
 
 	log.Printf("running on env ^w^: %s", *config.Env)
 
@@ -61,18 +64,20 @@ func main() {
 	}
 }
 
-func newApp(nc *nats.Conn) *handlers.MessageServer {
+func newApp(nc *nats.Conn) (*handlers.MessageServer, *dispatcher.Dispatcher) {
 	js, _ := jetstream.New(nc)
 	js.CreateStream(context.Background(), jetstream.StreamConfig{
 		Name:     "CHAT_MESSAGES",
 		Subjects: []string{"chat.messages.>"},
 	})
 
+	dispatcher := dispatcher.NewDispatcher(js)
+
 	repo := repository.NewInMemoryRepo()
-	sLayer := service.New(repo, js)
+	sLayer := service.New(repo, dispatcher)
 	server := handlers.NewMessageServer(sLayer)
 
-	return server
+	return server, dispatcher
 }
 
 func loadEnvFile() error {

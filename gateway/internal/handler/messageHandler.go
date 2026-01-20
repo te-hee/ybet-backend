@@ -5,6 +5,7 @@ import (
 	"gateway/internal/auth"
 	"gateway/internal/model"
 	"gateway/internal/service"
+	"gateway/internal/utils"
 	"log"
 	"net/http"
 	"net/url"
@@ -72,8 +73,10 @@ func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Reque
 
 	err := h.service.EditMessage(input)
 	if err != nil {
+		status, errResp := utils.GRPCToHTTPResponse(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(errResp)
 		log.Println(err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -97,8 +100,10 @@ func (h *MessageHander) HandleDeleteMessage(w http.ResponseWriter, r *http.Reque
 
 	err := h.service.DeleteMessage(input)
 	if err != nil {
+		status, errResp := utils.GRPCToHTTPResponse(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(errResp)
 		log.Println(err)
-		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
 
@@ -130,10 +135,10 @@ func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.R
 	}
 
 	messages, err := h.service.GetMessageHistory(input.Limit)
-
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(badRequest)
+		status, errResp := utils.GRPCToHTTPResponse(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(errResp)
 		log.Println(err)
 		return
 	}
@@ -163,13 +168,14 @@ func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request
 
 	input.UserId = userId
 	input.Username = username
-	err := h.service.SendMessage(input)
-
+	resp, err := h.service.SendMessage(input)
 	if err != nil {
-		writeError(w, http.StatusBadRequest, "Bad request")
-		log.Print(err)
+		status, errResp := utils.GRPCToHTTPResponse(err)
+		w.WriteHeader(status)
+		json.NewEncoder(w).Encode(errResp)
+		log.Println(err)
 		return
 	}
 
-	writeJSON(w, http.StatusOK, model.NewOutputSendMessage())
+	writeJSON(w, http.StatusOK, resp)
 }

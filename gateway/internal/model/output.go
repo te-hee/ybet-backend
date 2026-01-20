@@ -15,7 +15,8 @@ type OutputGetHistory struct {
 }
 
 type OutputSendMessege struct {
-	Output
+	MessageId string `json:"message_id"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 func NewOutput(success bool) Output {
@@ -28,8 +29,4 @@ func NewOutputError(errorMessage string) OutputError {
 
 func NewOutputGetHistory(messages []Message) OutputGetHistory {
 	return OutputGetHistory{Output: NewOutput(true), Messages: messages}
-}
-
-func NewOutputSendMessage() OutputSendMessege {
-	return OutputSendMessege{Output: NewOutput(true)}
 }

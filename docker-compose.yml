@@ -8,11 +8,11 @@ services:
     ports:
       - "50051:50051"
     environment:
-      - ENV=dev
+      - ENV=${ENV}
       - BUFFER_SIZE=100
       - STORAGE_TYPE=memory
-      - NO_AUTH=true
-      - NATS_ADDRESS=nats:4222
+      - NO_AUTH=${NO_AUTH}
+      - NATS_ADDRESS=${NATS_ADDRESS}
       - SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
     depends_on:
       - nats
@@ -27,9 +27,9 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - ENV=dev
+      - ENV=${ENV}
       - NO_AUTH=true
-      - NATS_ADDRESS=nats:4222
+      - NATS_ADDRESS=${NATS_ADDRESS}
     depends_on:
       - message-service
       - nats
@@ -44,9 +44,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ENV=dev
+      - ENV=${ENV}
       - MESSAGE_SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
       - MESSAGE_SERVICE_IP=message-service:50051
+      - NO_AUTH=${NO_AUTH}
     depends_on:
       - message-service
       - broadcast-service

@@ -22,7 +22,7 @@ type Message struct {
 type UserMessage struct {
 	Id        string `json:"message_id"`
 	Username  string `json:"username"`
-	Message   string `json:"message"`
+	Message   string `json:"content"`
 	Timestamp uint64 `json:"timestamp"`
 	UserId    string `json:"user_id"`
 }
