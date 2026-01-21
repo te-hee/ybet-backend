@@ -28,7 +28,7 @@ services:
       - "8081:8081"
     environment:
       - ENV=${ENV}
-      - NO_AUTH=true
+      - NO_AUTH=${NO_AUTH}
       - NATS_ADDRESS=${NATS_ADDRESS}
     depends_on:
       - message-service

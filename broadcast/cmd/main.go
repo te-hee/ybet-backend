@@ -52,7 +52,7 @@ func main() {
 	go wsHandler.BroadcastMessages()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/ws", wsHandler.WsHandler)
+	mux.HandleFunc("/ws", handler.AuthMiddleware(wsHandler.WsHandler))
 	handlerCORS := cors.Default().Handler(mux)
 	log.Println("waiting for conns on :8081")
 	if err := http.ListenAndServe(":8081", handlerCORS); err != nil {

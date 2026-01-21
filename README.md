@@ -47,9 +47,11 @@ Client
 Endpoint:
 ```
 
-ws://<host>:8081/ws?token=<jwt>
+ws://<host>:8081/ws
 
 ````
+### Potrzebny header
+- `Authorization: Bearer <token>`
 
 Format wiadomości:
 ```json
@@ -109,7 +111,8 @@ Typy `type`:
 ```json
 {
   "action": "connect | disconnect",
-  "user_id": "string"
+  "user_id": "string",
+  "username": "string"
 }
 ```
 
@@ -232,11 +235,11 @@ Request:
 ```
 
 Status codes:
-- **200** - message succesfully edited
-- **400** - wrong json provided
-- **401** - provide jwt token in `Authorization` header in formay `Bearer <token>`
-- **403** - not authorized to edit that message
-- **500** - internal server error or unknown error
+- **200** - udało się :3
+- **400** - zły format json :c
+- **401** - brak header `Authorization Bearer <token>` >~<
+- **403** - nie możesz edytować tej wiadomości >:c 
+- **500** - internal server error lub unknown error TwT
 ### DELETE
 
 Request:
@@ -248,8 +251,8 @@ Request:
 ```
 
 Status codes:
-- **200** - message succesfully deleted
-- **400** - wrong json provided
-- **401** - provide jwt token in `Authorization` header in formay `Bearer <token>`
-- **403** - not authorized to delete that message
-- **500** - internal server error or unknown error
+- **200** - udało się :3
+- **400** - zły format json :c
+- **401** - brak header `Authorization Bearer <token>` >~<
+- **403** - nie możesz usunąć tej wiadomości >:c 
+- **500** - internal server error lub unknown error TwT

@@ -41,6 +41,7 @@ type SystemMessage struct {
 }
 
 type UserListUpdate struct {
-	Action ListUpdateAction `json:"action"`
-	Uuid   string           `json:"user_id"`
+	Action   ListUpdateAction `json:"action"`
+	UserId   string           `json:"user_id"`
+	Username string           `json:"username"`
 }
