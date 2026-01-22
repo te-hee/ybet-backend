@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package login.v1;
+
+option go_package = "proto/login/v1;loginv1";
+
+service LoginService{
+  rpc SignUp(SignUpRequest) returns (SignUpResponse);
+  rpc LogIn(LogInRequest) returns (LogInResponse);
+  rpc GetNewAuthToken(GetNewAuthTokenRequest) returns (GetNewAuthTokenResponse);
+}
+
+message SignUpRequest{
+  string password = 1;
+  string username = 2;
+}
+
+message SignUpResponse{
+  string user_id = 1;
+  string refreshToken = 2;
+  string authToken = 3;
+}
+
+message LogInRequest{
+  string password = 1;
+  string username = 2;
+}
+
+message LogInResponse{
+  bool logged = 1;
+  string refreshToken = 2;
+  string authToken = 3;
+}
+
+message GetNewAuthTokenRequest{
+  string refreshToken = 1;
+}
+
+message GetNewAuthTokenResponse{
+  string authToken = 1;
+}
