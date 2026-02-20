@@ -12,18 +12,41 @@
 ## Uruchamianie
 
 Start:
-```
+```bash
 
-docker compose up --build -d
+make build-run
+
+```
+lub
+```bash
+
+make build
+make run
+
+```
+Żeby sprawdzić logi:
+```bash
+
+make logs
 
 ```
 
 Stop:
+```bash
+
+make down
+
 ```
 
-docker compose down
+Testy:
+```bash
+
+make test
 
 ```
+---
+
+Można użyć `make help`, żeby sprawdzić wszystkie komendy :3
 
 ---
 

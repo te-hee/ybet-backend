@@ -47,6 +47,8 @@ services:
       - ENV=${ENV}
       - MESSAGE_SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
       - MESSAGE_SERVICE_IP=message-service:50051
+      - ROOM_SERVICE_API_KEY=${ROOM_SERVICE_API_KEY}
+      - ROOM_SERVICE_IP=room-service:50052
       - NO_AUTH=${NO_AUTH}
     depends_on:
       - message-service
@@ -66,4 +68,7 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  postgres_data:
 

@@ -1,0 +1,137 @@
+syntax = "proto3";
+
+package room.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "proto/room/v1;roomv1";
+
+service RoomService {
+  // Room management
+  rpc CreateRoom(CreateRoomRequest) returns (CreateRoomResponse);
+  rpc GetRoom(GetRoomRequest) returns (GetRoomResponse);
+  rpc UpdateRoomName(UpdateRoomNameRequest) returns (google.protobuf.Empty);
+  rpc DeleteRoom(DeleteRoomRequest) returns (google.protobuf.Empty);
+  
+  // Membership management
+  rpc JoinRoom(JoinRoomRequest) returns (google.protobuf.Empty);
+  rpc LeaveRoom(LeaveRoomRequest) returns (google.protobuf.Empty);
+  rpc GetRoomMembers(GetRoomMembersRequest) returns (GetRoomMembersResponse);
+  rpc GetUserRooms(GetUserRoomsRequest) returns (GetUserRoomsResponse);
+  
+  // Unread management
+  rpc MarkAsRead(MarkAsReadRequest) returns (google.protobuf.Empty);
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
+}
+
+// Room Types
+enum RoomType {
+  ROOM_TYPE_UNSPECIFIED = 0;
+  ROOM_TYPE_DIRECT = 1;      // 1-on-1 chat
+  ROOM_TYPE_GROUP = 2;       // Group chat
+}
+
+// Create Room
+message CreateRoomRequest {
+  string name = 1;
+  RoomType type = 2;
+  string creator_user_id = 3;  // User creating the room
+  repeated string member_user_ids = 4;  // Initial members (optional)
+}
+
+message CreateRoomResponse {
+  string room_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+}
+
+// Get Room
+message GetRoomRequest {
+  string room_id = 1;
+}
+
+message Room {
+  string room_id = 1;
+  string name = 2;
+  RoomType type = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  int32 member_count = 6;
+}
+
+message GetRoomResponse {
+  Room room = 1;
+}
+
+// Update Room Name
+message UpdateRoomNameRequest {
+  string room_id = 1;
+  string name = 2;
+  string user_id = 3;  // User performing the update
+}
+
+// Delete Room
+message DeleteRoomRequest {
+  string room_id = 1;
+  string user_id = 2;  // User performing the delete
+}
+
+// Join Room
+message JoinRoomRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+// Leave Room
+message LeaveRoomRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+// Get Room Members
+message GetRoomMembersRequest {
+  string room_id = 1;
+}
+
+message RoomMember {
+  string user_id = 1;
+  google.protobuf.Timestamp joined_at = 2;
+}
+
+message GetRoomMembersResponse {
+  repeated RoomMember members = 1;
+}
+
+// Get User Rooms
+message GetUserRoomsRequest {
+  string user_id = 1;
+}
+
+message UserRoom {
+  string room_id = 1;
+  string name = 2;
+  RoomType type = 3;
+  int32 unread_count = 4;
+  google.protobuf.Timestamp joined_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message GetUserRoomsResponse {
+  repeated UserRoom rooms = 1;
+}
+
+// Mark As Read
+message MarkAsReadRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+// Get Unread Count
+message GetUnreadCountRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+message GetUnreadCountResponse {
+  int32 unread_count = 1;
+}

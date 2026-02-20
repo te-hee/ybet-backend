@@ -9,16 +9,20 @@ import (
 
 var (
 	MessageServiceAddr *string
+	RoomServiceAddr    *string
 	GatewayPort        *string
 	MessageServiceKey  *string
+	RoomServiceKey     *string
 	NoAuth             *bool
 )
 
 func InitConfig() {
 
 	MessageServiceAddr = flag.String("maddr", "localhost:50051", "The server address in the format of host:port")
+	RoomServiceAddr = flag.String("raddr", "localhost:50052", "The room service address in the format of host:port")
 	GatewayPort = flag.String("port", "8080", "port on which gateway should run")
 	MessageServiceKey = flag.String("mkey", "cute", "message service auth key")
+	RoomServiceKey = flag.String("rkey", "cute", "room service auth key")
 	NoAuth = flag.Bool("noauth", false, "disable useer authorization")
 
 	InitEnv()
@@ -34,6 +38,12 @@ func InitEnv() {
 		*MessageServiceAddr = "localhost:50051"
 	}
 
+	if roomServiceAddr, ok := os.LookupEnv("ROOM_SERVICE_IP"); ok {
+		*RoomServiceAddr = roomServiceAddr
+	} else {
+		*RoomServiceAddr = "localhost:50052"
+	}
+
 	if gatewayPort, ok := os.LookupEnv("GATEWAY_PORT"); ok {
 		*GatewayPort = gatewayPort
 	} else {
@@ -45,6 +55,13 @@ func InitEnv() {
 	} else {
 		*MessageServiceKey = "cute"
 	}
+
+	if roomServiceApiKey, ok := os.LookupEnv("ROOM_SERVICE_API_KEY"); ok {
+		*RoomServiceKey = roomServiceApiKey
+	} else {
+		*RoomServiceKey = "cute"
+	}
+
 	if noauth, ok := os.LookupEnv("NO_AUTH"); ok {
 		switch noauth {
 		case "true":
