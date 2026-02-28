@@ -3,7 +3,7 @@ go 1.25.6
 use (
 	./broadcast
 	./gateway
-	./loginService/
+	./loginService
 	./messageService
 	./proto
 	./tests

@@ -27,9 +27,8 @@ message LogInRequest{
 }
 
 message LogInResponse{
-  bool logged = 1;
-  string refreshToken = 2;
-  string authToken = 3;
+  string refreshToken = 1;
+  string authToken = 2;
 }
 
 message GetNewAuthTokenRequest{

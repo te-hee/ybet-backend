@@ -1,4 +1,4 @@
-package repository
+package storage 
 
 import (
 	"errors"
@@ -7,11 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type MemoryRepository struct{
+type MemoryStorage struct{
 	users map[uuid.UUID]model.User
 }
 
-func (r *MemoryRepository) AddUser(username string, password string) (uuid.UUID, error){
+func NewMemoryStorage() *MemoryStorage{
+	return &MemoryStorage{users: make(map[uuid.UUID]model.User)}
+}
+
+func (r *MemoryStorage) AddUser(username string, password string) (uuid.UUID, error){
 	id, err := uuid.NewUUID();
 	if (err != nil){
 		return id, err
@@ -22,7 +26,7 @@ func (r *MemoryRepository) AddUser(username string, password string) (uuid.UUID,
 	return id, nil
 }
 
-func (r *MemoryRepository) GetUserWithUsername(username string) (model.User, error){
+func (r *MemoryStorage) GetUserWithUsername(username string) (model.User, error){
 	for _, user := range r.users{
 		if user.Username == username {
 			return 	user, nil
@@ -31,7 +35,7 @@ func (r *MemoryRepository) GetUserWithUsername(username string) (model.User, err
 	return model.User{}, errors.New("User not found")
 }
 
-func (r *MemoryRepository) GetUserWithID(id uuid.UUID) (model.User, error){
+func (r *MemoryStorage) GetUserWithID(id uuid.UUID) (model.User, error){
 	user, ok := r.users[id];
 	if !ok{
 		return model.User{}, errors.New("User not found")

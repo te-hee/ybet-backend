@@ -1,4 +1,4 @@
-package repository
+package storage
 
 import (
 	"loginService/internal/model"
@@ -7,7 +7,7 @@ import (
 )
 
 
-type Repository interface{
+type Storage interface{
 	AddUser(username string, password string) (uuid.UUID, error)
 	GetUserWithUsername(username string) (model.User, error)
 	GetUserWithID(id uuid.UUID) (model.User, error)
