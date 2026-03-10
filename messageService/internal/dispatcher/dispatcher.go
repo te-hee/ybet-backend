@@ -21,7 +21,7 @@ type Dispatcher struct {
 func NewDispatcher(js jetstream.JetStream) *Dispatcher {
 	return &Dispatcher{
 		js:     js,
-		events: make(chan Event, *config.CustomBuffer),
+		events: make(chan Event, config.Cfg.Server.BufferSize),
 	}
 }
 
@@ -31,11 +31,11 @@ func (d *Dispatcher) Start() {
 
 		payload, err := json.Marshal(event.Data)
 		if err != nil {
-			log.Printf("failed to marshal json TwT: %v", err)
+			log.Printf("failed to marshal json: %v", err)
 		}
 		ackF, err := d.js.PublishAsync(event.Subject, payload)
 		if err != nil {
-			log.Printf("failed to publish on NATS :c : %v", err)
+			log.Printf("failed to publish on NATS : %v", err)
 		}
 
 		select {

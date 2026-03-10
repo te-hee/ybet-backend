@@ -15,14 +15,14 @@ import (
 )
 
 func main() {
-	config.InitFlags()
+	config.Load()
 
 	var nc *nats.Conn
 	var err error
 
 	for {
-		log.Printf("trying to connect on %v", *config.NatsAddr)
-		nc, err = nats.Connect(*config.NatsAddr)
+		log.Printf("trying to connect on %v", config.Cfg.Nats.Address)
+		nc, err = nats.Connect(config.Cfg.Nats.Address)
 		if err != nil {
 			log.Printf("NATS error: %v. Retrying in 5 seconds...", err)
 			time.Sleep(5 * time.Second)

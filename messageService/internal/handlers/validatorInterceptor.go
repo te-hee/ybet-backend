@@ -24,7 +24,7 @@ func AuthInterceptor(ctx context.Context, req any, _ *grpc.UnaryServerInfo, hand
 }
 
 func validate(ctx context.Context) error {
-	if !*config.NoAuth {
+	if config.Cfg.Auth.Enabled {
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return status.Error(codes.DataLoss, "Failed to retrieve gRPC metadata")
@@ -38,7 +38,7 @@ func validate(ctx context.Context) error {
 
 		key := strings.TrimPrefix(authHeader[0], "Bearer ")
 
-		if key != config.ServiceApiKey {
+		if key != config.Cfg.Auth.ServiceApiKey {
 			return status.Error(codes.Unauthenticated, "wrong auth key provided")
 		}
 	}

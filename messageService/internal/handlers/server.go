@@ -28,7 +28,7 @@ func NewMessageServer(serviceLayer *service.ServiceLayer) *MessageServer {
 func (m MessageServer) SendMessage(_ context.Context, req *messagev2.SendMessageRequest) (_ *messagev2.SendMessageResponse, _ error) {
 	userId, err := uuid.Parse(req.UserId)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "wrong user id: %v :c", err)
+		return nil, status.Errorf(codes.InvalidArgument, "wrong user id: %v", err)
 	}
 	created_at := time.Now()
 	msg := models.Message{

@@ -57,7 +57,7 @@ func TestMessageLifecycle(t *testing.T) {
 	t.Run("cutie edits message", func(t *testing.T) {
 		newContent := "sowwy (edited)"
 		resp := sendEditRequest(GatewayURL, cutieToken, messageID, newContent)
-		require.Equal(t, http.StatusOK, resp.StatusCode, "failed to edit the message :c (tip: check docker logs)")
+		require.Equal(t, http.StatusOK, resp.StatusCode, "failed to edit the message (tip: check docker logs)")
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		event := waitForEvent(t, boykisserWS, "editMessage", 5*time.Second)
@@ -74,7 +74,7 @@ func TestMessageLifecycle(t *testing.T) {
 
 	t.Run("cutie deletes message", func(t *testing.T) {
 		resp := sendDeleteRequest(GatewayURL, cutieToken, messageID)
-		require.Equal(t, http.StatusOK, resp.StatusCode, "failed to edit the message :c (tip: check docker logs)")
+		require.Equal(t, http.StatusOK, resp.StatusCode, "failed to edit the message (tip: check docker logs)")
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 		event := waitForEvent(t, boykisserWS, "deleteMessage", 5*time.Second)

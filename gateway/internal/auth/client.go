@@ -1,8 +1,8 @@
 package auth
 
 import (
+	"gateway/config"
 	"gateway/internal/model"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -29,7 +29,7 @@ func (c MinimalClient) GenerateToken(username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	jwtkey := []byte(os.Getenv("JWT_SECRET"))
+	jwtkey := []byte(config.Cfg.Auth.JwtSecret)
 
 	signed, err := token.SignedString(jwtkey)
 

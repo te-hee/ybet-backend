@@ -176,11 +176,6 @@ Header dla requestów (poza /login):
 Authorization: Bearer <jwt>
 ```
 
-#### Tryb testowy (bez auth)
-
-Flaga `--noauth` lub env `NO_AUTH=true`
-Wszystkie akcje wykonywane jako użytkownik testowy.
-
 ---
 
 ## Zmienne środowiskowe
@@ -189,7 +184,7 @@ Wszystkie akcje wykonywane jako użytkownik testowy.
 | ------------------ | ------- | --------------------------------- |
 | MESSAGE_SERVICE_IP | string  | adres message service (`ip:port`) |
 | GATEWAY_PORT       | number  | port gatewaya                     |
-| NO_AUTH            | boolean | wyłączenie autoryzacji            |
+| AUTH           | boolean | autoryzacja            |
 
 ---
 

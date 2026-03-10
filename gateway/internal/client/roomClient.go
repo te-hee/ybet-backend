@@ -76,7 +76,7 @@ func (c *RoomServiceClient) GetUnreadCount(req *roomv1.GetUnreadCountRequest) (*
 }
 
 func setRoomServiceAuth(ctx context.Context) context.Context {
-	md := metadata.Pairs("authorization", "Bearer "+*config.RoomServiceKey)
+	md := metadata.Pairs("authorization", "Bearer "+config.Cfg.Services.Room.ApiKey)
 	ctxWithAuth := metadata.NewOutgoingContext(ctx, md)
 	return ctxWithAuth
 }

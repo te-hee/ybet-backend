@@ -3,7 +3,6 @@ package main
 import (
 	messagev2 "backend/proto/message/v2"
 	"context"
-	"flag"
 	"gateway/config"
 	"gateway/internal/auth"
 	"gateway/internal/client"
@@ -19,15 +18,14 @@ import (
 )
 
 func main() {
-	config.InitConfig()
+	config.Load()
 
 	mux := http.NewServeMux()
 
-	flag.Parse()
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
-	grpcClient, err := grpc.NewClient(*config.MessageServiceAddr, opts...)
+	grpcClient, err := grpc.NewClient(config.Cfg.Services.Message.Address, opts...)
 
 	if err != nil {
 		log.Panic(err)
@@ -54,10 +52,10 @@ func main() {
 	mux.HandleFunc("/login", authHandler.HandleLogin)
 	handlerCORS := cors.Default().Handler(mux)
 
-	log.Println("Running server on port:", *config.GatewayPort)
-	log.Println("Connected to message service on:", *config.MessageServiceAddr)
+	log.Println("Running server on port:", config.Cfg.Server.Port)
+	log.Println("Connected to message service on:", config.Cfg.Services.Message.Address)
 
-	if err := http.ListenAndServe(":"+*config.GatewayPort, handlerCORS); err != nil {
+	if err := http.ListenAndServe(":"+config.Cfg.Server.Port, handlerCORS); err != nil {
 
 		panic(err)
 	}

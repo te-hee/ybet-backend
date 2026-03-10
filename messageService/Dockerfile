@@ -18,4 +18,5 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/messageService/messageService .
+COPY messageService/application.yaml .
 CMD ["./messageService"]

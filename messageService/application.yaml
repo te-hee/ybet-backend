@@ -1,0 +1,11 @@
+env: "dev"
+
+server:
+  buffer_size: 100
+
+auth:
+  enabled: true
+  service_api_key: ""
+
+nats:
+  address: "nats:4222"

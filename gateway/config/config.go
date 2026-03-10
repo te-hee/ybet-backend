@@ -1,73 +1,67 @@
 package config
 
 import (
-	"flag"
-	"os"
+	"log"
 
-	"github.com/joho/godotenv"
+	"github.com/spf13/viper"
 )
 
-var (
-	MessageServiceAddr *string
-	RoomServiceAddr    *string
-	GatewayPort        *string
-	MessageServiceKey  *string
-	RoomServiceKey     *string
-	NoAuth             *bool
-)
-
-func InitConfig() {
-
-	MessageServiceAddr = flag.String("maddr", "localhost:50051", "The server address in the format of host:port")
-	RoomServiceAddr = flag.String("raddr", "localhost:50052", "The room service address in the format of host:port")
-	GatewayPort = flag.String("port", "8080", "port on which gateway should run")
-	MessageServiceKey = flag.String("mkey", "cute", "message service auth key")
-	RoomServiceKey = flag.String("rkey", "cute", "room service auth key")
-	NoAuth = flag.Bool("noauth", false, "disable useer authorization")
-
-	InitEnv()
-	flag.Parse()
+type ServerConfig struct {
+	Port string `mapstructure:"port"`
 }
 
-func InitEnv() {
-	_ = godotenv.Load()
+type AuthConfig struct {
+	Enabled   bool   `mapstructure:"enabled"`
+	JwtSecret string `mapstructure:"jwt_secret"`
+}
 
-	if msgServiceAddr, ok := os.LookupEnv("MESSAGE_SERVICE_IP"); ok {
-		*MessageServiceAddr = msgServiceAddr
-	} else {
-		*MessageServiceAddr = "localhost:50051"
-	}
+type ServiceEndpoint struct {
+	Address string `mapstructure:"address"`
+	ApiKey  string `mapstructure:"api_key"`
+}
 
-	if roomServiceAddr, ok := os.LookupEnv("ROOM_SERVICE_IP"); ok {
-		*RoomServiceAddr = roomServiceAddr
-	} else {
-		*RoomServiceAddr = "localhost:50052"
-	}
+type ServicesConfig struct {
+	Message ServiceEndpoint `mapstructure:"message"`
+	Room    ServiceEndpoint `mapstructure:"room"`
+}
 
-	if gatewayPort, ok := os.LookupEnv("GATEWAY_PORT"); ok {
-		*GatewayPort = gatewayPort
-	} else {
-		*GatewayPort = "8080"
-	}
+type Config struct {
+	Server   ServerConfig   `mapstructure:"server"`
+	Auth     AuthConfig     `mapstructure:"auth"`
+	Services ServicesConfig `mapstructure:"services"`
+}
 
-	if msgServiceApiKey, ok := os.LookupEnv("MESSAGE_SERVICE_API_KEY"); ok {
-		*MessageServiceKey = msgServiceApiKey
-	} else {
-		*MessageServiceKey = "cute"
-	}
+var Cfg Config
 
-	if roomServiceApiKey, ok := os.LookupEnv("ROOM_SERVICE_API_KEY"); ok {
-		*RoomServiceKey = roomServiceApiKey
-	} else {
-		*RoomServiceKey = "cute"
-	}
+func Load() {
+	viper.SetConfigName("application")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
 
-	if noauth, ok := os.LookupEnv("NO_AUTH"); ok {
-		switch noauth {
-		case "true":
-			*NoAuth = true
-		case "false":
-			*NoAuth = false
+	viper.SetDefault("server.port", "8080")
+	viper.SetDefault("auth.enabled", true)
+	viper.SetDefault("auth.jwt_secret", "")
+	viper.SetDefault("services.message.address", "message-service:50051")
+	viper.SetDefault("services.message.api_key", "cute")
+	viper.SetDefault("services.room.address", "localhost:50052")
+	viper.SetDefault("services.room.api_key", "cute")
+
+	viper.BindEnv("server.port", "GATEWAY_PORT")
+	viper.BindEnv("auth.enabled", "AUTH")
+	viper.BindEnv("auth.jwt_secret", "JWT_SECRET")
+	viper.BindEnv("services.message.address", "MESSAGE_SERVICE_IP")
+	viper.BindEnv("services.message.api_key", "MESSAGE_SERVICE_API_KEY")
+	viper.BindEnv("services.room.address", "ROOM_SERVICE_IP")
+	viper.BindEnv("services.room.api_key", "ROOM_SERVICE_API_KEY")
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			log.Fatalf("error reading config file: %v", err)
 		}
+		log.Println("no config file found, using defaults and environment variable")
+	}
+
+	if err := viper.Unmarshal(&Cfg); err != nil {
+		log.Fatalf("unable to unmarshal config: %v", err)
 	}
 }

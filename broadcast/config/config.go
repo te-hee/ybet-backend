@@ -6,13 +6,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ServerConfig struct {
-	BufferSize int `mapstructure:"buffer_size"`
-}
-
 type AuthConfig struct {
-	Enabled       bool   `mapstructure:"enabled"`
-	ServiceApiKey string `mapstructure:"service_api_key"`
+	Enabled   bool   `mapstructure:"enabled"`
+	JwtSecret string `mapstructure:"jwt_secret"`
 }
 
 type NatsConfig struct {
@@ -20,10 +16,8 @@ type NatsConfig struct {
 }
 
 type Config struct {
-	Env    string       `mapstructure:"env"`
-	Server ServerConfig `mapstructure:"server"`
-	Auth   AuthConfig   `mapstructure:"auth"`
-	Nats   NatsConfig   `mapstructure:"nats"`
+	Auth AuthConfig `mapstructure:"auth"`
+	Nats NatsConfig `mapstructure:"nats"`
 }
 
 var Cfg Config
@@ -33,16 +27,12 @@ func Load() {
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(".")
 
-	viper.SetDefault("env", "dev")
-	viper.SetDefault("server.buffer_size", 100)
 	viper.SetDefault("auth.enabled", true)
-	viper.SetDefault("auth.service_api_key", "")
+	viper.SetDefault("auth.jwt_secret", "")
 	viper.SetDefault("nats.address", "localhost:4222")
 
-	viper.BindEnv("env", "ENV")
-	viper.BindEnv("server.buffer_size", "BUFFER_SIZE")
 	viper.BindEnv("auth.enabled", "AUTH")
-	viper.BindEnv("auth.service_api_key", "SERVICE_API_KEY")
+	viper.BindEnv("auth.jwt_secret", "JWT_SECRET")
 	viper.BindEnv("nats.address", "NATS_ADDRESS")
 
 	if err := viper.ReadInConfig(); err != nil {
@@ -54,9 +44,5 @@ func Load() {
 
 	if err := viper.Unmarshal(&Cfg); err != nil {
 		log.Fatalf("unable to unmarshal config: %v", err)
-	}
-
-	if Cfg.Auth.Enabled && Cfg.Auth.ServiceApiKey == "" {
-		panic("auth is enabled but service api key is not provided")
 	}
 }
