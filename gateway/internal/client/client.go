@@ -85,7 +85,7 @@ func (c MessageServiceClient) DeleteMessage(deleteRequest model.DeleteMessageReq
 }
 
 func setAuth(ctx context.Context) context.Context {
-	md := metadata.Pairs("authorization", "Bearer "+*config.MessageServiceKey)
+	md := metadata.Pairs("authorization", "Bearer "+config.Cfg.Services.Message.ApiKey)
 	ctxWithAuth := metadata.NewOutgoingContext(ctx, md)
 	return ctxWithAuth
 }

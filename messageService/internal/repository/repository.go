@@ -54,11 +54,11 @@ func (r *MemoryRepo) EditMessage(editMessage models.EditMessage) (_ error) {
 	var message models.Message
 	var ok bool
 	if message, ok = r.messages[editMessage.MessageId]; !ok {
-		return status.Error(codes.NotFound, "message does not exist :c")
+		return status.Error(codes.NotFound, "message does not exist")
 	}
 
 	if message.UserId.String() != editMessage.UserId {
-		return status.Error(codes.PermissionDenied, "not your message! >:c")
+		return status.Error(codes.PermissionDenied, "not your message")
 	}
 	message.Message = editMessage.Content
 	r.messages[message.Id.String()] = message
@@ -72,11 +72,11 @@ func (r *MemoryRepo) DeleteMessage(deleteMessage models.DeleteMessage) (_ error)
 	var message models.Message
 	var ok bool
 	if message, ok = r.messages[deleteMessage.MessageId]; !ok {
-		return status.Error(codes.NotFound, "message does not exist :c")
+		return status.Error(codes.NotFound, "message does not exist")
 	}
 
 	if message.UserId.String() != deleteMessage.UserId {
-		return status.Error(codes.PermissionDenied, "not your message! >:c")
+		return status.Error(codes.PermissionDenied, "not your message")
 	}
 	delete(r.messages, message.Id.String())
 	return nil

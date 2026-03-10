@@ -10,10 +10,8 @@ import (
 	"messageService/internal/repository"
 	"messageService/internal/service"
 	"net"
-	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/nats.go/jetstream"
 	"google.golang.org/grpc"
@@ -21,16 +19,13 @@ import (
 )
 
 func main() {
-	err := loadEnvFile()
-	if err != nil {
-		log.Fatalf("error loading env variables ;c: %v", err)
-	}
-	config.LoadConfig()
+	config.Load()
 	var nc *nats.Conn
+	var err error
 
 	for {
-		log.Printf("trying to connect on %v", config.NATSAddress)
-		nc, err = nats.Connect(config.NATSAddress)
+		log.Printf("trying to connect on %v", config.Cfg.Nats.Address)
+		nc, err = nats.Connect(config.Cfg.Nats.Address)
 		if err != nil {
 			log.Printf("NATS error: %v. Retrying in 5 seconds...", err)
 			time.Sleep(5 * time.Second)
@@ -47,9 +42,9 @@ func main() {
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
 	messagev2.RegisterMessageServiceServer(grpcServer, msgServer)
 
-	log.Printf("running on env ^w^: %s", *config.Env)
+	log.Printf("running on env ^w^: %s", config.Cfg.Env)
 
-	if *config.Env == "dev" || *config.Env == "" {
+	if config.Cfg.Env == "dev" || config.Cfg.Env == "" {
 		reflection.Register(grpcServer)
 	}
 
@@ -78,15 +73,4 @@ func newApp(nc *nats.Conn) (*handlers.MessageServer, *dispatcher.Dispatcher) {
 	server := handlers.NewMessageServer(sLayer)
 
 	return server, dispatcher
-}
-
-func loadEnvFile() error {
-	_, err := os.Stat(".env")
-	if err == nil {
-		err := godotenv.Load(".env")
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

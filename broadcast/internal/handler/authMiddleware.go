@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -19,7 +18,7 @@ const UsernameKey = "username"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if *config.NoAuth {
+		if !config.Cfg.Auth.Enabled {
 			ctx := context.WithValue(r.Context(), UserIDKey, "8f0d8552-d07d-432d-9018-8374313f9151")
 			ctx = context.WithValue(ctx, UsernameKey, "cutiepie")
 			next.ServeHTTP(w, r.WithContext(ctx))
@@ -53,7 +52,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func verifyJwt(tokenString string) (*models.UserClaims, error) {
 	var claims models.UserClaims
 	token, err := jwt.ParseWithClaims(tokenString, &claims, func(t *jwt.Token) (any, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(config.Cfg.Auth.JwtSecret), nil
 	})
 	if err != nil {
 		return nil, err

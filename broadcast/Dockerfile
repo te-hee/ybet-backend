@@ -18,4 +18,5 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/broadcast/broadcast .
+COPY broadcast/application.yaml .
 CMD ["./broadcast"]

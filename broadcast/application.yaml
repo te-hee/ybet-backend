@@ -1,0 +1,6 @@
+auth:
+  enabled: true
+  jwt_secret: ""
+
+nats:
+  address: "localhost:4222"

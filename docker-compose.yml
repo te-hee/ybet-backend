@@ -11,7 +11,7 @@ services:
       - ENV=${ENV}
       - BUFFER_SIZE=100
       - STORAGE_TYPE=memory
-      - NO_AUTH=${NO_AUTH}
+      - AUTH=${AUTH}
       - NATS_ADDRESS=${NATS_ADDRESS}
       - SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
     depends_on:
@@ -28,8 +28,9 @@ services:
       - "8081:8081"
     environment:
       - ENV=${ENV}
-      - NO_AUTH=${NO_AUTH}
+      - AUTH=${AUTH}
       - NATS_ADDRESS=${NATS_ADDRESS}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - message-service
       - nats
@@ -49,7 +50,8 @@ services:
       - MESSAGE_SERVICE_IP=message-service:50051
       - ROOM_SERVICE_API_KEY=${ROOM_SERVICE_API_KEY}
       - ROOM_SERVICE_IP=room-service:50052
-      - NO_AUTH=${NO_AUTH}
+      - AUTH=${AUTH}
+      - JWT_SECRET=${JWT_SECRET}
     depends_on:
       - message-service
       - broadcast-service
