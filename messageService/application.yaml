@@ -8,4 +8,4 @@ auth:
   service_api_key: ""
 
 nats:
-  address: "localhost:4222"
+  address: "nats:4222"
