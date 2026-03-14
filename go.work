@@ -6,6 +6,7 @@ use (
 	./loginService
 	./messageService
 	./proto
+	./roomService
 	./tests
 )
 

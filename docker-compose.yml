@@ -55,6 +55,22 @@ services:
     depends_on:
       - message-service
       - broadcast-service
+      - room-service
+    networks:
+      - app-network
+
+  room-service:
+    build:
+      context: .
+      dockerfile: ./roomService/Dockerfile
+    container_name: room-service
+    ports:
+      - "50052:50052"
+    environment:
+      - ENV=${ENV}
+      - AUTH=${AUTH}
+      - SERVICE_API_KEY=${ROOM_SERVICE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - app-network
 
