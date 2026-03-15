@@ -1,4 +1,4 @@
-package handlers
+package grpcadapter
 
 import (
 	roomv1 "backend/proto/room/v1"

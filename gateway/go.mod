@@ -1,6 +1,6 @@
 module gateway
 
-go 1.25.3
+go 1.25
 
 require (
 	backend/proto v0.0.0

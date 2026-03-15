@@ -1,10 +1,10 @@
-package handlers
+package grpcadapter
 
 import (
 	"context"
 	"fmt"
 	"roomService/config"
-	"roomService/internal/models"
+	"roomService/internal/contextkeys"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,7 +45,7 @@ func authenticate(ctx context.Context) (context.Context, error) {
 
 	authHeader := md.Get("authorization")
 	if len(authHeader) == 0 {
-		return models.ContextWithInternal(ctx), nil
+		return contextkeys.ContextWithInternal(ctx), nil
 	}
 
 	tokenString := strings.TrimPrefix(authHeader[0], "Bearer ")
@@ -63,7 +63,7 @@ func authenticate(ctx context.Context) (context.Context, error) {
 		return nil, status.Error(codes.Unauthenticated, "user_uuid (subject) not found in JWT")
 	}
 
-	return models.ContextWithUser(ctx, userUUID, claims.Username), nil
+	return contextkeys.ContextWithUser(ctx, userUUID, claims.Username), nil
 }
 
 func verifyJWT(tokenString string) (*UserClaims, error) {

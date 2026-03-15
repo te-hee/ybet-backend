@@ -5,7 +5,7 @@ import (
 	"log"
 	"net"
 	"roomService/config"
-	"roomService/internal/handlers"
+	grpcadapter "roomService/internal/adapters/grpc"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -14,9 +14,9 @@ import (
 func main() {
 	config.Load()
 
-	roomServer := handlers.NewRoomServer()
+	roomServer := grpcadapter.NewRoomServer()
 
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(handlers.AuthInterceptor))
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpcadapter.AuthInterceptor))
 	roomv1.RegisterRoomServiceServer(grpcServer, roomServer)
 
 	log.Printf("running on env ^w^: %s", config.Cfg.Env)
