@@ -27,6 +27,7 @@ type RoomRepository interface {
 
 	MarkAsRead(ctx context.Context, roomUUID string, userUUID string, lastReadMessageID string) error
 	GetUnreadCount(ctx context.Context, roomUUID string, userUUID string) (int32, error)
+	CheckIsAdmin(ctx context.Context, userID, roomID string) (bool, error)
 }
 
 type EventPublisher interface {

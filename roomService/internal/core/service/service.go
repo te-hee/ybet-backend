@@ -1,6 +1,8 @@
 package service
 
-import "roomService/internal/ports"
+import (
+	"roomService/internal/ports"
+)
 
 type roomService struct {
 	repo      ports.RoomRepository
