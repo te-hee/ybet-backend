@@ -1,6 +1,2 @@
-auth:
-  enabled: true
-  jwt_secret: ""
-
 nats:
   address: "nats:4222"

@@ -2,8 +2,6 @@ server:
   port: ":6741"
 
 auth:
-  password_salt: "kosher"
-  jwt_key: "kosher"
   auth_token_duration: 10
   refresh_token_duration: 1440
   issuer: "loginService"

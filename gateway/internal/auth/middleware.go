@@ -15,6 +15,7 @@ type ContextKey string
 
 const UserIDKey = "userID"
 const UsernameKey = "username"
+const RawTokenKey = "rawToken"
 
 func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +45,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		ctx := context.WithValue(r.Context(), UserIDKey, claims.UserId)
 		ctx = context.WithValue(ctx, UsernameKey, claims.Username)
+		ctx = context.WithValue(ctx, RawTokenKey, tokenString)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
@@ -67,4 +69,9 @@ func UserFromContext(ctx context.Context) (string, string) {
 	userID, _ := ctx.Value(UserIDKey).(string)
 	username, _ := ctx.Value(UsernameKey).(string)
 	return userID, username
+}
+
+func RawTokenFromContext(ctx context.Context) string {
+	token, _ := ctx.Value(RawTokenKey).(string)
+	return token
 }
