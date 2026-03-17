@@ -1,10 +1,11 @@
 module roomService
 
-go 1.25
+go 1.25.3
 
 require (
 	backend/proto v0.0.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/google/uuid v1.6.0
 	github.com/spf13/viper v1.21.0
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11

@@ -1,14 +1,8 @@
 server:
   port: "8080"
 
-auth:
-  enabled: true
-  jwt_secret: ""
-
 services:
   message:
     address: "message-service:50051"
-    api_key: "cute"
   room:
     address: "localhost:50052"
-    api_key: "cute"

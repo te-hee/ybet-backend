@@ -1,6 +1,6 @@
 module gateway
 
-go 1.25
+go 1.25.3
 
 require (
 	backend/proto v0.0.0
@@ -10,6 +10,7 @@ require (
 	github.com/rs/cors v1.11.1
 	github.com/spf13/viper v1.21.0
 	google.golang.org/grpc v1.78.0
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -27,7 +28,6 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260114163908-3f89685c29c3 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 )
 
 replace backend/proto => ../proto

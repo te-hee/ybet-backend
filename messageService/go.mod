@@ -1,6 +1,6 @@
 module messageService
 
-go 1.25
+go 1.25.3
 
 require (
 	backend/proto v0.0.0

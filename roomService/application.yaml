@@ -3,7 +3,3 @@ env: "dev"
 server:
   port: ":50052"
 
-auth:
-  enabled: true
-  service_api_key: ""
-  jwt_secret: ""
