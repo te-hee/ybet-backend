@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 
+	jwtware "github.com/gofiber/contrib/v3/jwt"
+	"github.com/gofiber/fiber/v3"
 	"github.com/gorilla/schema"
 )
 
@@ -39,22 +41,22 @@ func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, model.NewOutputError(message))
 }
 
-func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
-	log.Println(r.Method)
-	w.Header().Set("Content-type", "application/json")
-	switch r.Method {
-	case http.MethodGet:
-		h.HandleGetMessageHistory(w, r)
-	case http.MethodPost:
-		h.HandleSendMessage(w, r)
-	case http.MethodPatch:
-		h.HandleUpdateMessage(w, r)
-	case http.MethodDelete:
-		h.HandleDeleteMessage(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
+// func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
+// 	log.Println(r.Method)
+// 	w.Header().Set("Content-type", "application/json")
+// 	switch r.Method {
+// 	case http.MethodGet:
+// 		h.HandleGetMessageHistory(w, r)
+// 	case http.MethodPost:
+// 		h.HandleSendMessage(w, r)
+// 	case http.MethodPatch:
+// 		h.HandleUpdateMessage(w, r)
+// 	case http.MethodDelete:
+// 		h.HandleDeleteMessage(w, r)
+// 	default:
+// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 	}
+// }
 
 func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Request) {
 	var input model.EditMessageRequest
@@ -146,24 +148,30 @@ func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.R
 	writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))
 }
 
-func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 	var input model.InputMessage
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		writeError(w, http.StatusBadRequest, "Bad request")
+
+	if err := c.Bind().Body(&input); err != nil {
 		log.Println(err)
-		return
+		return utils.WriteJsonError(c, fiber.StatusBadRequest, "bad request")
 	}
 
 	if input.Content == "" {
 		errorMessage := "Content was not passed or its empty"
-		writeError(w, http.StatusBadRequest, errorMessage)
 		log.Println(errorMessage)
-		return
+		return utils.WriteJsonError(c, fiber.StatusBadRequest, errorMessage)
 	}
-	userId, username := auth.UserFromContext(r.Context())
+
+	user := jwtware.FromContext(c)
+	claims := user.Claims.(*model.UserClaims)
+
+	userId := claims.Subject
+	username := claims.Username
+
 	if userId == "" || username == "" {
-		http.Error(w, "user information missing", http.StatusUnauthorized)
-		return
+		errorMessage := "user information missing"
+		log.Println(errorMessage)
+		return utils.WriteJsonError(c, fiber.StatusBadRequest, errorMessage)
 	}
 
 	input.UserId = userId
@@ -171,11 +179,9 @@ func (h *MessageHander) HandleSendMessage(w http.ResponseWriter, r *http.Request
 	resp, err := h.service.SendMessage(input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(errResp)
 		log.Println(err)
-		return
+		return utils.WriteJsonError(c, status, errResp)
 	}
 
-	writeJSON(w, http.StatusOK, resp)
+	return c.JSON(resp)
 }

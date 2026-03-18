@@ -13,20 +13,24 @@ type Client interface {
 	GenerateToken(username string) (string, error)
 }
 
-type MinimalClient struct{}
+type MinimalClient struct{
+	issuer string
+	authTokenTime time.Duration
+}
 
-func NewMinimalClient() *MinimalClient {
-	return &MinimalClient{}
+func NewMinimalClient(issuer string, authTokenTime time.Duration) *MinimalClient {
+	return &MinimalClient{issuer: issuer, authTokenTime: authTokenTime}
 }
 
 func (c MinimalClient) GenerateToken(username string) (string, error) {
-	claims := &model.UserClaims{
-		Username: username,
-		UserId:   uuid.NewString(),
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
-		},
-	}
+
+	claims := model.NewUserClaims(
+		username,
+		uuid.New(),
+		"Auth",
+		time.Now().Add(c.authTokenTime),
+		c.issuer,
+	)	
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	jwtkey := []byte(config.Cfg.Auth.JwtSecret)
