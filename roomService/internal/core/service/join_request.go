@@ -21,6 +21,24 @@ func (s *roomService) CreateJoinRequest(ctx context.Context, roomUUID string, pu
 		return err
 	}
 
+	_, err = s.repo.GetRoom(ctx, roomUUID)
+	if err != nil {
+		return err
+	}
+
+	isMember, err := s.repo.CheckIsMember(ctx, userID, roomUUID)
+	if err != nil {
+		return err
+	}
+	if isMember {
+		return status.Error(codes.AlreadyExists, "User is already a member of this room")
+	}
+
+	existingReq, err := s.repo.GetJoinRequest(ctx, roomUUID, userID)
+	if err == nil && existingReq.Status == domain.RequestStatusPending {
+		return status.Error(codes.AlreadyExists, "A pending join request already exists")
+	}
+
 	joinRequest := domain.JoinRequest{
 		RoomUUID:  roomUUID,
 		UserUUID:  userID,
@@ -66,13 +84,47 @@ func (s *roomService) RespondToJoinRequest(ctx context.Context, roomUUID string,
 		return status.Errorf(codes.PermissionDenied, "Only admins can respond to join requests")
 	}
 
-	return s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, decision)
+	err = s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, decision)
+	if err != nil {
+		return err
+	}
+
+	if decision == domain.RequestStatusAccepted {
+		err = s.repo.AddMember(ctx, roomUUID, userUUID)
+		if err != nil {
+			s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, domain.RequestStatusPending)
+			return err
+		}
+
+		err = s.keyRepo.SaveKey(ctx, domain.PendingKey{
+			RoomUUID: roomUUID,
+			UserUUID: userUUID,
+		})
+		if err != nil {
+			s.repo.RemoveMember(ctx, roomUUID, userUUID)
+			s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, domain.RequestStatusPending)
+			return err
+		}
+
+		return s.eventPublisher.PublishMemberJoined(ctx, roomUUID, userUUID)
+	}
+	return nil
 }
 
 func (s *roomService) GetPendingKeys(ctx context.Context) ([]domain.PendingKey, error) {
-	return []domain.PendingKey{}, nil
+	userId, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.keyRepo.GetUserKeys(ctx, userId)
 }
 
 func (s *roomService) AcknowledgeKeyDelivery(ctx context.Context, roomUUID string) error {
-	return nil
+	userId, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	return s.keyRepo.DeleteKey(ctx, roomUUID, userId)
 }

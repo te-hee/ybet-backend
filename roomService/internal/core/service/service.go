@@ -5,13 +5,21 @@ import (
 )
 
 type roomService struct {
-	repo      ports.RoomRepository
-	publisher ports.EventPublisher
+	repo           ports.RoomRepository
+	eventPublisher ports.EventPublisher
+	keyRepo        ports.KeyRepository
 }
 
-func New(repo ports.RoomRepository, publisher ports.EventPublisher) ports.RoomService {
+type Config struct {
+	Repo      ports.RoomRepository
+	Publisher ports.EventPublisher
+	KeyRepo   ports.KeyRepository
+}
+
+func New(cfg Config) ports.RoomService {
 	return &roomService{
-		repo:      repo,
-		publisher: publisher,
+		repo:           cfg.Repo,
+		eventPublisher: cfg.Publisher,
+		keyRepo:        cfg.KeyRepo,
 	}
 }
