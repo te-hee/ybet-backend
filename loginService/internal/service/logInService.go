@@ -18,18 +18,27 @@ type LogInService struct {
 	jwtKey               string
 }
 
+type TokenType string
+
+const (
+	TokenAuth TokenType = "Auth"
+	TokenRefresh TokenType = "Refresh"
+)
+
 func NewLogInService(storage storage.Storage, authTokenDuration time.Duration, refreshTokenDuration time.Duration, issuer string, jwtKey string) *LogInService {
 	return &LogInService{storage: storage, authTokenDuration: authTokenDuration, refreshTokenDuration: refreshTokenDuration, issuer: issuer, jwtKey: jwtKey}
 }
 
 type TokenData struct {
 	Username string `json:"username"`
+	TokenType TokenType `json:"tokenType"`
 	jwt.RegisteredClaims
 }
 
-func (s *LogInService) newTokenData(username string, userId uuid.UUID, expiersAt time.Time) TokenData {
+func (s *LogInService) newTokenData(username string, tokenType TokenType, userId uuid.UUID, expiersAt time.Time) TokenData {
 	return TokenData{
 		Username: username,
+		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiersAt),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -60,13 +69,13 @@ func (s *LogInService) LogIn(username string, password string) (*string, *string
 		return nil, nil, errors.New("bad password")
 	}
 
-	authToken, err := s.generateJWT(s.newTokenData(username, user.Id, time.Now().Add(s.authTokenDuration)))
+	authToken, err := s.generateJWT(s.newTokenData(username, TokenAuth, user.Id, time.Now().Add(s.authTokenDuration)))
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	refreshToken, err := s.generateJWT(s.newTokenData(username, user.Id, time.Now().Add(s.refreshTokenDuration)))
+	refreshToken, err := s.generateJWT(s.newTokenData(username, TokenRefresh, user.Id, time.Now().Add(s.refreshTokenDuration)))
 
 	if err != nil {
 		return nil, nil, err
@@ -88,13 +97,13 @@ func (s *LogInService) SignIn(username string, password string) (*uuid.UUID, *st
 		return nil, nil, nil, err
 	}
 
-	authToken, err := s.generateJWT(s.newTokenData(username, id, time.Now().Add(s.authTokenDuration)))
+	authToken, err := s.generateJWT(s.newTokenData(username, TokenAuth, id, time.Now().Add(s.authTokenDuration)))
 
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	refreshToken, err := s.generateJWT(s.newTokenData(username, id, time.Now().Add(s.refreshTokenDuration)))
+	refreshToken, err := s.generateJWT(s.newTokenData(username, TokenRefresh, id, time.Now().Add(s.refreshTokenDuration)))
 
 	if err != nil {
 		return nil, nil, nil, err
