@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.0
 // - protoc             v6.33.5
-// source: room/v1/room.proto
+// source: proto/room/v1/room.proto
 
 package roomv1
 
@@ -20,53 +20,51 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RoomService_CreateRoom_FullMethodName           = "/room.v1.RoomService/CreateRoom"
-	RoomService_GetRoom_FullMethodName              = "/room.v1.RoomService/GetRoom"
-	RoomService_UpdateRoomName_FullMethodName       = "/room.v1.RoomService/UpdateRoomName"
-	RoomService_DeleteRoom_FullMethodName           = "/room.v1.RoomService/DeleteRoom"
-	RoomService_GetUserRooms_FullMethodName         = "/room.v1.RoomService/GetUserRooms"
-	RoomService_GetRoomMembers_FullMethodName       = "/room.v1.RoomService/GetRoomMembers"
-	RoomService_LeaveRoom_FullMethodName            = "/room.v1.RoomService/LeaveRoom"
-	RoomService_RemoveMember_FullMethodName         = "/room.v1.RoomService/RemoveMember"
-	RoomService_CreateInvite_FullMethodName         = "/room.v1.RoomService/CreateInvite"
-	RoomService_GetInvite_FullMethodName            = "/room.v1.RoomService/GetInvite"
-	RoomService_DeleteInvite_FullMethodName         = "/room.v1.RoomService/DeleteInvite"
-	RoomService_JoinViaInvite_FullMethodName        = "/room.v1.RoomService/JoinViaInvite"
-	RoomService_CreateJoinRequest_FullMethodName    = "/room.v1.RoomService/CreateJoinRequest"
-	RoomService_GetJoinRequests_FullMethodName      = "/room.v1.RoomService/GetJoinRequests"
-	RoomService_RespondToJoinRequest_FullMethodName = "/room.v1.RoomService/RespondToJoinRequest"
-	RoomService_MarkAsRead_FullMethodName           = "/room.v1.RoomService/MarkAsRead"
-	RoomService_GetUnreadCount_FullMethodName       = "/room.v1.RoomService/GetUnreadCount"
-	RoomService_GetAllowedRooms_FullMethodName      = "/room.v1.RoomService/GetAllowedRooms"
+	RoomService_CreateRoom_FullMethodName             = "/room.v1.RoomService/CreateRoom"
+	RoomService_GetRoom_FullMethodName                = "/room.v1.RoomService/GetRoom"
+	RoomService_UpdateRoomName_FullMethodName         = "/room.v1.RoomService/UpdateRoomName"
+	RoomService_DeleteRoom_FullMethodName             = "/room.v1.RoomService/DeleteRoom"
+	RoomService_GetUserRooms_FullMethodName           = "/room.v1.RoomService/GetUserRooms"
+	RoomService_GetRoomMembers_FullMethodName         = "/room.v1.RoomService/GetRoomMembers"
+	RoomService_LeaveRoom_FullMethodName              = "/room.v1.RoomService/LeaveRoom"
+	RoomService_RemoveMember_FullMethodName           = "/room.v1.RoomService/RemoveMember"
+	RoomService_CreateInvite_FullMethodName           = "/room.v1.RoomService/CreateInvite"
+	RoomService_GetInvite_FullMethodName              = "/room.v1.RoomService/GetInvite"
+	RoomService_DeleteInvite_FullMethodName           = "/room.v1.RoomService/DeleteInvite"
+	RoomService_JoinViaInvite_FullMethodName          = "/room.v1.RoomService/JoinViaInvite"
+	RoomService_CreateJoinRequest_FullMethodName      = "/room.v1.RoomService/CreateJoinRequest"
+	RoomService_GetJoinRequests_FullMethodName        = "/room.v1.RoomService/GetJoinRequests"
+	RoomService_RespondToJoinRequest_FullMethodName   = "/room.v1.RoomService/RespondToJoinRequest"
+	RoomService_GetPendingKeys_FullMethodName         = "/room.v1.RoomService/GetPendingKeys"
+	RoomService_AcknowledgeKeyDelivery_FullMethodName = "/room.v1.RoomService/AcknowledgeKeyDelivery"
+	RoomService_MarkAsRead_FullMethodName             = "/room.v1.RoomService/MarkAsRead"
+	RoomService_GetUnreadCount_FullMethodName         = "/room.v1.RoomService/GetUnreadCount"
+	RoomService_GetAllowedRooms_FullMethodName        = "/room.v1.RoomService/GetAllowedRooms"
 )
 
 // RoomServiceClient is the client API for RoomService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RoomServiceClient interface {
-	// Room CRUD
 	CreateRoom(ctx context.Context, in *CreateRoomRequest, opts ...grpc.CallOption) (*CreateRoomResponse, error)
 	GetRoom(ctx context.Context, in *GetRoomRequest, opts ...grpc.CallOption) (*GetRoomResponse, error)
 	UpdateRoomName(ctx context.Context, in *UpdateRoomNameRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteRoom(ctx context.Context, in *DeleteRoomRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetUserRooms(ctx context.Context, in *GetUserRoomsRequest, opts ...grpc.CallOption) (*GetUserRoomsResponse, error)
-	// Membership
 	GetRoomMembers(ctx context.Context, in *GetRoomMembersRequest, opts ...grpc.CallOption) (*GetRoomMembersResponse, error)
 	LeaveRoom(ctx context.Context, in *LeaveRoomRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemoveMember(ctx context.Context, in *RemoveMemberRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Invite Links
 	CreateInvite(ctx context.Context, in *CreateInviteRequest, opts ...grpc.CallOption) (*CreateInviteResponse, error)
 	GetInvite(ctx context.Context, in *GetInviteRequest, opts ...grpc.CallOption) (*GetInviteResponse, error)
 	DeleteInvite(ctx context.Context, in *DeleteInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	JoinViaInvite(ctx context.Context, in *JoinViaInviteRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Join Requests (E2EE Key Exchange)
 	CreateJoinRequest(ctx context.Context, in *CreateJoinRequestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetJoinRequests(ctx context.Context, in *GetJoinRequestsRequest, opts ...grpc.CallOption) (*GetJoinRequestsResponse, error)
 	RespondToJoinRequest(ctx context.Context, in *RespondToJoinRequestRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Unread Tracking
+	GetPendingKeys(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PendingKeysResponse, error)
+	AcknowledgeKeyDelivery(ctx context.Context, in *AcknowledgeKeyDeliveryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	MarkAsRead(ctx context.Context, in *MarkAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetUnreadCount(ctx context.Context, in *GetUnreadCountRequest, opts ...grpc.CallOption) (*GetUnreadCountResponse, error)
-	// Internal (Service-to-Service, authenticated via API Key)
 	GetAllowedRooms(ctx context.Context, in *GetAllowedRoomsRequest, opts ...grpc.CallOption) (*GetAllowedRoomsResponse, error)
 }
 
@@ -228,6 +226,26 @@ func (c *roomServiceClient) RespondToJoinRequest(ctx context.Context, in *Respon
 	return out, nil
 }
 
+func (c *roomServiceClient) GetPendingKeys(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*PendingKeysResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PendingKeysResponse)
+	err := c.cc.Invoke(ctx, RoomService_GetPendingKeys_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *roomServiceClient) AcknowledgeKeyDelivery(ctx context.Context, in *AcknowledgeKeyDeliveryRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, RoomService_AcknowledgeKeyDelivery_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *roomServiceClient) MarkAsRead(ctx context.Context, in *MarkAsReadRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(emptypb.Empty)
@@ -262,29 +280,25 @@ func (c *roomServiceClient) GetAllowedRooms(ctx context.Context, in *GetAllowedR
 // All implementations must embed UnimplementedRoomServiceServer
 // for forward compatibility.
 type RoomServiceServer interface {
-	// Room CRUD
 	CreateRoom(context.Context, *CreateRoomRequest) (*CreateRoomResponse, error)
 	GetRoom(context.Context, *GetRoomRequest) (*GetRoomResponse, error)
 	UpdateRoomName(context.Context, *UpdateRoomNameRequest) (*emptypb.Empty, error)
 	DeleteRoom(context.Context, *DeleteRoomRequest) (*emptypb.Empty, error)
 	GetUserRooms(context.Context, *GetUserRoomsRequest) (*GetUserRoomsResponse, error)
-	// Membership
 	GetRoomMembers(context.Context, *GetRoomMembersRequest) (*GetRoomMembersResponse, error)
 	LeaveRoom(context.Context, *LeaveRoomRequest) (*emptypb.Empty, error)
 	RemoveMember(context.Context, *RemoveMemberRequest) (*emptypb.Empty, error)
-	// Invite Links
 	CreateInvite(context.Context, *CreateInviteRequest) (*CreateInviteResponse, error)
 	GetInvite(context.Context, *GetInviteRequest) (*GetInviteResponse, error)
 	DeleteInvite(context.Context, *DeleteInviteRequest) (*emptypb.Empty, error)
 	JoinViaInvite(context.Context, *JoinViaInviteRequest) (*emptypb.Empty, error)
-	// Join Requests (E2EE Key Exchange)
 	CreateJoinRequest(context.Context, *CreateJoinRequestRequest) (*emptypb.Empty, error)
 	GetJoinRequests(context.Context, *GetJoinRequestsRequest) (*GetJoinRequestsResponse, error)
 	RespondToJoinRequest(context.Context, *RespondToJoinRequestRequest) (*emptypb.Empty, error)
-	// Unread Tracking
+	GetPendingKeys(context.Context, *emptypb.Empty) (*PendingKeysResponse, error)
+	AcknowledgeKeyDelivery(context.Context, *AcknowledgeKeyDeliveryRequest) (*emptypb.Empty, error)
 	MarkAsRead(context.Context, *MarkAsReadRequest) (*emptypb.Empty, error)
 	GetUnreadCount(context.Context, *GetUnreadCountRequest) (*GetUnreadCountResponse, error)
-	// Internal (Service-to-Service, authenticated via API Key)
 	GetAllowedRooms(context.Context, *GetAllowedRoomsRequest) (*GetAllowedRoomsResponse, error)
 	mustEmbedUnimplementedRoomServiceServer()
 }
@@ -340,6 +354,12 @@ func (UnimplementedRoomServiceServer) GetJoinRequests(context.Context, *GetJoinR
 }
 func (UnimplementedRoomServiceServer) RespondToJoinRequest(context.Context, *RespondToJoinRequestRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method RespondToJoinRequest not implemented")
+}
+func (UnimplementedRoomServiceServer) GetPendingKeys(context.Context, *emptypb.Empty) (*PendingKeysResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPendingKeys not implemented")
+}
+func (UnimplementedRoomServiceServer) AcknowledgeKeyDelivery(context.Context, *AcknowledgeKeyDeliveryRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "method AcknowledgeKeyDelivery not implemented")
 }
 func (UnimplementedRoomServiceServer) MarkAsRead(context.Context, *MarkAsReadRequest) (*emptypb.Empty, error) {
 	return nil, status.Error(codes.Unimplemented, "method MarkAsRead not implemented")
@@ -641,6 +661,42 @@ func _RoomService_RespondToJoinRequest_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RoomService_GetPendingKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).GetPendingKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RoomService_GetPendingKeys_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).GetPendingKeys(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RoomService_AcknowledgeKeyDelivery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcknowledgeKeyDeliveryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RoomServiceServer).AcknowledgeKeyDelivery(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RoomService_AcknowledgeKeyDelivery_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RoomServiceServer).AcknowledgeKeyDelivery(ctx, req.(*AcknowledgeKeyDeliveryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _RoomService_MarkAsRead_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(MarkAsReadRequest)
 	if err := dec(in); err != nil {
@@ -763,6 +819,14 @@ var RoomService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _RoomService_RespondToJoinRequest_Handler,
 		},
 		{
+			MethodName: "GetPendingKeys",
+			Handler:    _RoomService_GetPendingKeys_Handler,
+		},
+		{
+			MethodName: "AcknowledgeKeyDelivery",
+			Handler:    _RoomService_AcknowledgeKeyDelivery_Handler,
+		},
+		{
 			MethodName: "MarkAsRead",
 			Handler:    _RoomService_MarkAsRead_Handler,
 		},
@@ -776,5 +840,5 @@ var RoomService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "room/v1/room.proto",
+	Metadata: "proto/room/v1/room.proto",
 }

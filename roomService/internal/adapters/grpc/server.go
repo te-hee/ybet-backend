@@ -17,6 +17,13 @@ func NewRoomServer() *RoomServer {
 	return &RoomServer{}
 }
 
+func (s *RoomServer) GetPendingKeys(_ context.Context, _ *emptypb.Empty) (*roomv1.PendingKeysResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "GetPendingKeys not implemented")
+}
+func (s *RoomServer) AcknowledgeKeyDelivery(_ context.Context, _ *roomv1.AcknowledgeKeyDeliveryRequest) (*emptypb.Empty, error) {
+	return nil, status.Error(codes.Unimplemented, "AcknowledgeKeyDelivery not implemented")
+}
+
 func (s *RoomServer) CreateRoom(_ context.Context, _ *roomv1.CreateRoomRequest) (*roomv1.CreateRoomResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "CreateRoom not implemented")
 }

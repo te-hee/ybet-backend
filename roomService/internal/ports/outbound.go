@@ -36,3 +36,9 @@ type EventPublisher interface {
 	PublishMemberJoined(ctx context.Context, roomUUID string, userUUID string) error
 	PublishMemberLeft(ctx context.Context, roomUUID string, userUUID string) error
 }
+
+type KeyRepository interface {
+	SaveKey(ctx context.Context, key domain.PendingKey) error
+	GetKey(ctx context.Context, roomUUID, userUUID string) (domain.PendingKey, error)
+	DeleteKey(ctx context.Context, roomUUID, userUUID string) error
+}

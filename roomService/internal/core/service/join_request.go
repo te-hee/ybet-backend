@@ -68,3 +68,11 @@ func (s *roomService) RespondToJoinRequest(ctx context.Context, roomUUID string,
 
 	return s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, decision)
 }
+
+func (s *roomService) GetPendingKeys(ctx context.Context) ([]domain.PendingKey, error) {
+	return []domain.PendingKey{}, nil
+}
+
+func (s *roomService) AcknowledgeKeyDelivery(ctx context.Context, roomUUID string) error {
+	return nil
+}

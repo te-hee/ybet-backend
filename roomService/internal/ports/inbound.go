@@ -24,6 +24,8 @@ type RoomService interface {
 	CreateJoinRequest(ctx context.Context, roomUUID string, publicKey string) error
 	GetJoinRequests(ctx context.Context, roomUUID string) ([]domain.JoinRequest, error)
 	RespondToJoinRequest(ctx context.Context, roomUUID string, userUUID string, decision domain.RequestStatus) error
+	GetPendingKeys(ctx context.Context) ([]domain.PendingKey, error)
+	AcknowledgeKeyDelivery(ctx context.Context, roomUUID string) error
 
 	MarkAsRead(ctx context.Context, roomUUID string, lastReadMessageID string) error
 	GetUnreadCount(ctx context.Context, roomUUID string) (domain.GetUnreadCountResult, error)
