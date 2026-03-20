@@ -14,7 +14,7 @@ import (
 func main() {
 	config.Load()
 
-	roomServer := grpcadapter.NewRoomServer()
+	roomServer := grpcadapter.NewRoomServer(nil)
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpcadapter.AuthInterceptor))
 	roomv1.RegisterRoomServiceServer(grpcServer, roomServer)
