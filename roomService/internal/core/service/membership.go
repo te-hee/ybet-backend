@@ -4,7 +4,6 @@ import (
 	"context"
 	"roomService/internal/contextkeys"
 	"roomService/internal/core/domain"
-	"slices"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,14 +16,10 @@ func (s *roomService) GetRoomMembers(ctx context.Context, roomUUID string) ([]do
 		return members, err
 	}
 
-	userRooms, err := s.repo.GetUserRooms(ctx, userID)
+	isMember, err := s.repo.CheckIsMember(ctx, userID, roomUUID)
 	if err != nil {
 		return members, err
 	}
-
-	isMember := slices.ContainsFunc(userRooms, func(room domain.UserRoom) bool {
-		return room.RoomUUID == roomUUID
-	})
 
 	if !isMember {
 		return members, status.Error(codes.PermissionDenied, "Only room members can check other members")
@@ -38,11 +33,53 @@ func (s *roomService) GetRoomMembers(ctx context.Context, roomUUID string) ([]do
 }
 
 func (s *roomService) LeaveRoom(ctx context.Context, roomUUID string) error {
-	// TODO: implement
-	panic("not implemented")
+	userID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	room, err := s.repo.GetRoom(ctx, roomUUID)
+	if err != nil {
+		return err
+	}
+	if room.AdminID == userID {
+		return status.Error(codes.PermissionDenied, "Admins cannot leave the room. Please delete the room instead")
+	}
+
+	err = s.repo.RemoveMember(ctx, roomUUID, userID)
+	if err != nil {
+		return err
+	}
+
+	return s.eventPublisher.PublishMemberLeft(ctx, roomUUID, userID)
 }
 
 func (s *roomService) RemoveMember(ctx context.Context, roomUUID string, userUUID string) error {
-	// TODO: implement
-	panic("not implemented")
+	requesterID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, requesterID, roomUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return status.Errorf(codes.PermissionDenied, "Only admins can remove members")
+	}
+
+	room, err := s.repo.GetRoom(ctx, roomUUID)
+	if err != nil {
+		return err
+	}
+	if room.AdminID == userUUID {
+		return status.Error(codes.PermissionDenied, "Admins cannot be removed from the room")
+	}
+
+	err = s.repo.RemoveMember(ctx, roomUUID, userUUID)
+	if err != nil {
+		return err
+	}
+
+	return s.eventPublisher.PublishMemberLeft(ctx, roomUUID, userUUID)
 }

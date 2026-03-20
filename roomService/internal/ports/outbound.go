@@ -27,7 +27,10 @@ type RoomRepository interface {
 
 	MarkAsRead(ctx context.Context, roomUUID string, userUUID string, lastReadMessageID string) error
 	GetUnreadCount(ctx context.Context, roomUUID string, userUUID string) (int32, error)
+
 	CheckIsAdmin(ctx context.Context, userID, roomID string) (bool, error)
+	CheckIsMember(ctx context.Context, userID, roomID string) (bool, error)
+	GetJoinRequest(ctx context.Context, roomUUID string, userUUID string) (domain.JoinRequest, error)
 }
 
 type EventPublisher interface {
@@ -39,6 +42,6 @@ type EventPublisher interface {
 
 type KeyRepository interface {
 	SaveKey(ctx context.Context, key domain.PendingKey) error
-	GetKey(ctx context.Context, roomUUID, userUUID string) (domain.PendingKey, error)
+	GetUserKeys(ctx context.Context, userUUID string) ([]domain.PendingKey, error)
 	DeleteKey(ctx context.Context, roomUUID, userUUID string) error
 }
