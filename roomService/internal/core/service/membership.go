@@ -4,82 +4,79 @@ import (
 	"context"
 	"roomService/internal/contextkeys"
 	"roomService/internal/core/domain"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *roomService) GetRoomMembers(ctx context.Context, roomUUID string) ([]domain.RoomMember, error) {
+func (s *roomService) GetRoomMembers(ctx context.Context, req domain.GetRoomMembersDTO) ([]domain.RoomMember, error) {
 	var members []domain.RoomMember
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return members, err
 	}
 
-	isMember, err := s.repo.CheckIsMember(ctx, userID, roomUUID)
+	isMember, err := s.repo.CheckIsMember(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return members, err
 	}
 
 	if !isMember {
-		return members, status.Error(codes.PermissionDenied, "Only room members can check other members")
+		return members, domain.NewError(domain.CodePermissionDenied, "Only room members can check other members")
 	}
 
-	members, err = s.repo.GetRoomMembers(ctx, roomUUID)
+	members, err = s.repo.GetRoomMembers(ctx, req.RoomUUID)
 	if err != nil {
 		return members, err
 	}
 	return members, nil
 }
 
-func (s *roomService) LeaveRoom(ctx context.Context, roomUUID string) error {
+func (s *roomService) LeaveRoom(ctx context.Context, req domain.LeaveRoomDTO) error {
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	room, err := s.repo.GetRoom(ctx, roomUUID)
+	room, err := s.repo.GetRoom(ctx, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if room.AdminID == userID {
-		return status.Error(codes.PermissionDenied, "Admins cannot leave the room. Please delete the room instead")
+		return domain.NewError(domain.CodePermissionDenied, "Admins cannot leave the room. Please delete the room instead")
 	}
 
-	err = s.repo.RemoveMember(ctx, roomUUID, userID)
+	err = s.repo.RemoveMember(ctx, req.RoomUUID, userID)
 	if err != nil {
 		return err
 	}
 
-	return s.eventPublisher.PublishMemberLeft(ctx, roomUUID, userID)
+	return s.eventPublisher.PublishMemberLeft(ctx, req.RoomUUID, userID)
 }
 
-func (s *roomService) RemoveMember(ctx context.Context, roomUUID string, userUUID string) error {
+func (s *roomService) RemoveMember(ctx context.Context, req domain.RemoveMemberDTO) error {
 	requesterID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	isAdmin, err := s.repo.CheckIsAdmin(ctx, requesterID, roomUUID)
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, requesterID, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if !isAdmin {
-		return status.Errorf(codes.PermissionDenied, "Only admins can remove members")
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can remove members")
 	}
 
-	room, err := s.repo.GetRoom(ctx, roomUUID)
+	room, err := s.repo.GetRoom(ctx, req.RoomUUID)
 	if err != nil {
 		return err
 	}
-	if room.AdminID == userUUID {
-		return status.Error(codes.PermissionDenied, "Admins cannot be removed from the room")
+	if room.AdminID == req.UserUUID {
+		return domain.NewError(domain.CodePermissionDenied, "Admins cannot be removed from the room")
 	}
 
-	err = s.repo.RemoveMember(ctx, roomUUID, userUUID)
+	err = s.repo.RemoveMember(ctx, req.RoomUUID, req.UserUUID)
 	if err != nil {
 		return err
 	}
 
-	return s.eventPublisher.PublishMemberLeft(ctx, roomUUID, userUUID)
+	return s.eventPublisher.PublishMemberLeft(ctx, req.RoomUUID, req.UserUUID)
 }

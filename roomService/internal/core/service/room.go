@@ -7,15 +7,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate bool, groupID string) (domain.CreateRoomResult, error) {
+func (s *roomService) CreateRoom(ctx context.Context, req domain.CreateRoomDTO) (domain.CreateRoomResult, error) {
 	var result domain.CreateRoomResult
 
-	if name == "" {
-		return result, status.Error(codes.InvalidArgument, "room name cannot be empty")
+	if req.Name == "" {
+		return result, domain.NewError(domain.CodeInvalidArgument, "room name cannot be empty")
 	}
 
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
@@ -27,10 +25,10 @@ func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate boo
 	createdAt := time.Now()
 	room := domain.Room{
 		RoomUUID:    roomID,
-		Name:        name,
+		Name:        req.Name,
 		AdminID:     userID,
-		IsPrivate:   isPrivate,
-		GroupID:     groupID,
+		IsPrivate:   req.IsPrivate,
+		GroupID:     req.GroupID,
 		MemberCount: 1,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,
@@ -53,8 +51,8 @@ func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate boo
 	return result, nil
 }
 
-func (s *roomService) GetRoom(ctx context.Context, roomUUID string) (domain.Room, error) {
-	room, err := s.repo.GetRoom(ctx, roomUUID)
+func (s *roomService) GetRoom(ctx context.Context, req domain.GetRoomDTO) (domain.Room, error) {
+	room, err := s.repo.GetRoom(ctx, req.RoomUUID)
 	if err != nil {
 		return domain.Room{}, err
 	}
@@ -68,21 +66,21 @@ func (s *roomService) GetRoom(ctx context.Context, roomUUID string) (domain.Room
 		return domain.Room{}, err
 	}
 
-	isMember, err := s.repo.CheckIsMember(ctx, userID, roomUUID)
+	isMember, err := s.repo.CheckIsMember(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return domain.Room{}, err
 	}
 
 	if !isMember {
-		return domain.Room{}, status.Errorf(codes.PermissionDenied, "Only room members can access private rooms")
+		return domain.Room{}, domain.NewError(domain.CodePermissionDenied, "Only room members can access private rooms")
 	}
 
 	return room, nil
 }
 
-func (s *roomService) UpdateRoomName(ctx context.Context, roomUUID string, name string) error {
-	if name == "" {
-		return status.Error(codes.InvalidArgument, "room name cannot be empty")
+func (s *roomService) UpdateRoomName(ctx context.Context, req domain.UpdateRoomNameDTO) error {
+	if req.Name == "" {
+		return domain.NewError(domain.CodeInvalidArgument, "room name cannot be empty")
 	}
 
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
@@ -90,37 +88,37 @@ func (s *roomService) UpdateRoomName(ctx context.Context, roomUUID string, name 
 		return err
 	}
 
-	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, roomUUID)
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if !isAdmin {
-		return status.Errorf(codes.PermissionDenied, "Only admins can update room name")
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can update room name")
 	}
 
-	return s.repo.UpdateRoomName(ctx, roomUUID, name)
+	return s.repo.UpdateRoomName(ctx, req.RoomUUID, req.Name)
 }
 
-func (s *roomService) DeleteRoom(ctx context.Context, roomUUID string) error {
+func (s *roomService) DeleteRoom(ctx context.Context, req domain.DeleteRoomDTO) error {
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, roomUUID)
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if !isAdmin {
-		return status.Errorf(codes.PermissionDenied, "Only admins can delete rooms")
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can delete rooms")
 	}
 
-	err = s.repo.DeleteRoom(ctx, roomUUID)
+	err = s.repo.DeleteRoom(ctx, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 
-	return s.eventPublisher.PublishRoomDeleted(ctx, roomUUID)
+	return s.eventPublisher.PublishRoomDeleted(ctx, req.RoomUUID)
 }
 
 func (s *roomService) GetUserRooms(ctx context.Context) ([]domain.UserRoom, error) {
