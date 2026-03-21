@@ -5,12 +5,9 @@ import (
 	"roomService/internal/contextkeys"
 	"roomService/internal/core/domain"
 	"time"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *roomService) CreateJoinRequest(ctx context.Context, roomUUID string, publicKey string) error {
+func (s *roomService) CreateJoinRequest(ctx context.Context, req domain.CreateJoinRequestDTO) error {
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
@@ -21,29 +18,29 @@ func (s *roomService) CreateJoinRequest(ctx context.Context, roomUUID string, pu
 		return err
 	}
 
-	_, err = s.repo.GetRoom(ctx, roomUUID)
+	_, err = s.repo.GetRoom(ctx, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 
-	isMember, err := s.repo.CheckIsMember(ctx, userID, roomUUID)
+	isMember, err := s.repo.CheckIsMember(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if isMember {
-		return status.Error(codes.AlreadyExists, "User is already a member of this room")
+		return domain.NewError(domain.CodeAlreadyExists, "User is already a member of this room")
 	}
 
-	existingReq, err := s.repo.GetJoinRequest(ctx, roomUUID, userID)
+	existingReq, err := s.repo.GetJoinRequest(ctx, req.RoomUUID, userID)
 	if err == nil && existingReq.Status == domain.RequestStatusPending {
-		return status.Error(codes.AlreadyExists, "A pending join request already exists")
+		return domain.NewError(domain.CodeAlreadyExists, "A pending join request already exists")
 	}
 
 	joinRequest := domain.JoinRequest{
-		RoomUUID:  roomUUID,
+		RoomUUID:  req.RoomUUID,
 		UserUUID:  userID,
 		Username:  username,
-		PublicKey: publicKey,
+		PublicKey: req.PublicKey,
 		Status:    domain.RequestStatusPending,
 		CreatedAt: time.Now(),
 	}
@@ -51,7 +48,7 @@ func (s *roomService) CreateJoinRequest(ctx context.Context, roomUUID string, pu
 	return s.repo.CreateJoinRequest(ctx, joinRequest)
 }
 
-func (s *roomService) GetJoinRequests(ctx context.Context, roomUUID string) ([]domain.JoinRequest, error) {
+func (s *roomService) GetJoinRequests(ctx context.Context, req domain.GetJoinRequestsDTO) ([]domain.JoinRequest, error) {
 	var joinRequests []domain.JoinRequest
 
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
@@ -59,54 +56,54 @@ func (s *roomService) GetJoinRequests(ctx context.Context, roomUUID string) ([]d
 		return joinRequests, err
 	}
 
-	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, roomUUID)
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return joinRequests, err
 	}
 	if !isAdmin {
-		return joinRequests, status.Errorf(codes.PermissionDenied, "Only admins can get join requests")
+		return joinRequests, domain.NewError(domain.CodePermissionDenied, "Only admins can get join requests")
 	}
 
-	return s.repo.GetJoinRequests(ctx, roomUUID)
+	return s.repo.GetJoinRequests(ctx, req.RoomUUID)
 }
 
-func (s *roomService) RespondToJoinRequest(ctx context.Context, roomUUID string, userUUID string, decision domain.RequestStatus) error {
+func (s *roomService) RespondToJoinRequest(ctx context.Context, req domain.RespondToJoinRequestDTO) error {
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, roomUUID)
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
 	if err != nil {
 		return err
 	}
 	if !isAdmin {
-		return status.Errorf(codes.PermissionDenied, "Only admins can respond to join requests")
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can respond to join requests")
 	}
 
-	err = s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, decision)
+	err = s.repo.UpdateJoinRequestStatus(ctx, req.RoomUUID, req.UserUUID, req.Decision)
 	if err != nil {
 		return err
 	}
 
-	if decision == domain.RequestStatusAccepted {
-		err = s.repo.AddMember(ctx, roomUUID, userUUID)
+	if req.Decision == domain.RequestStatusAccepted {
+		err = s.repo.AddMember(ctx, req.RoomUUID, req.UserUUID)
 		if err != nil {
-			s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, domain.RequestStatusPending)
+			s.repo.UpdateJoinRequestStatus(ctx, req.RoomUUID, req.UserUUID, domain.RequestStatusPending)
 			return err
 		}
 
 		err = s.keyRepo.SaveKey(ctx, domain.PendingKey{
-			RoomUUID: roomUUID,
-			UserUUID: userUUID,
+			RoomUUID: req.RoomUUID,
+			UserUUID: req.UserUUID,
 		})
 		if err != nil {
-			s.repo.RemoveMember(ctx, roomUUID, userUUID)
-			s.repo.UpdateJoinRequestStatus(ctx, roomUUID, userUUID, domain.RequestStatusPending)
+			s.repo.RemoveMember(ctx, req.RoomUUID, req.UserUUID)
+			s.repo.UpdateJoinRequestStatus(ctx, req.RoomUUID, req.UserUUID, domain.RequestStatusPending)
 			return err
 		}
 
-		return s.eventPublisher.PublishMemberJoined(ctx, roomUUID, userUUID)
+		return s.eventPublisher.PublishMemberJoined(ctx, req.RoomUUID, req.UserUUID)
 	}
 	return nil
 }
@@ -120,11 +117,11 @@ func (s *roomService) GetPendingKeys(ctx context.Context) ([]domain.PendingKey, 
 	return s.keyRepo.GetUserKeys(ctx, userId)
 }
 
-func (s *roomService) AcknowledgeKeyDelivery(ctx context.Context, roomUUID string) error {
+func (s *roomService) AcknowledgeKeyDelivery(ctx context.Context, req domain.AcknowledgeKeyDeliveryDTO) error {
 	userId, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 
-	return s.keyRepo.DeleteKey(ctx, roomUUID, userId)
+	return s.keyRepo.DeleteKey(ctx, req.RoomUUID, userId)
 }

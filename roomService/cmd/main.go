@@ -6,6 +6,7 @@ import (
 	"net"
 	"roomService/config"
 	grpcadapter "roomService/internal/adapters/grpc"
+	"roomService/internal/core/service"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -14,7 +15,8 @@ import (
 func main() {
 	config.Load()
 
-	roomServer := grpcadapter.NewRoomServer()
+	svc := service.New(service.Config{})
+	roomServer := grpcadapter.NewRoomServer(svc)
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(grpcadapter.AuthInterceptor))
 	roomv1.RegisterRoomServiceServer(grpcServer, roomServer)
