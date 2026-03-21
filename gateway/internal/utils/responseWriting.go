@@ -1,9 +1,21 @@
 package utils
 
-import "github.com/gofiber/fiber/v3"
+import (
+	"gateway/internal/model"
+	"log"
 
-func WriteJsonError(c fiber.Ctx, status int, errorMessage any) error {
-    return c.Status(status).JSON(fiber.Map{
-        "error": errorMessage,
-    })
+	"github.com/gofiber/fiber/v3"
+)
+
+func WriteJsonError(c fiber.Ctx, status int, errorObject any) error {
+    return c.Status(status).JSON(errorObject)
+}
+
+func WriteJsonErrorWithLog(c fiber.Ctx, status int, errorMessage any) error{
+	log.Println(errorMessage)
+	return WriteJsonError(c, status, errorMessage)
+}
+
+func WriteErrorMessageWithLog(c fiber.Ctx, status int, errorMessage string) error{
+	return WriteJsonErrorWithLog(c, status, model.NewOutputError(errorMessage))
 }

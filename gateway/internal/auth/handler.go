@@ -24,7 +24,7 @@ func (h *AuthHandler) HandleLogin(c fiber.Ctx) error{
 
 	if err := c.Bind().Body(&loginData); err != nil {
 		log.Println(err)
-		return utils.WriteJsonError(c, fiber.StatusBadRequest, "bad json")
+		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "bad json")
 
 	}
 
@@ -32,7 +32,7 @@ func (h *AuthHandler) HandleLogin(c fiber.Ctx) error{
 
 	if err != nil {
 		log.Println(err)
-		return utils.WriteJsonError(c,fiber.StatusInternalServerError,  "error generating JWT token")
+		return utils.WriteErrorMessageWithLog(c,fiber.StatusInternalServerError,  "error generating JWT token")
 	}
 
 	resp := model.LoginResponse{

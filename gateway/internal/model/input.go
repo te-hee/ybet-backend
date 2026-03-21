@@ -7,5 +7,5 @@ type InputMessage struct {
 }
 
 type InputHistory struct {
-	Limit uint32 `json:"limit"`
+	Limit uint32 `json:"limit" query:"limit"`
 }

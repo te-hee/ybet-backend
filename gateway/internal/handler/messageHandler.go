@@ -1,27 +1,18 @@
 package handler
 
 import (
-	"encoding/json"
-	"gateway/internal/auth"
 	"gateway/internal/model"
 	"gateway/internal/service"
 	"gateway/internal/utils"
-	"log"
-	"net/http"
-	"net/url"
-
 	jwtware "github.com/gofiber/contrib/v3/jwt"
 	"github.com/gofiber/fiber/v3"
-	"github.com/gorilla/schema"
 )
 
 type MessageHander struct {
 	service *service.MessageService
 }
 
-var decoder = schema.NewDecoder() // decoder for url params
 
-var badRequest = model.NewOutputError("Bad Request")
 
 func NewMessageHandler(service *service.MessageService) *MessageHander {
 	messageHander := &MessageHander{
@@ -30,45 +21,19 @@ func NewMessageHandler(service *service.MessageService) *MessageHander {
 	return messageHander
 }
 
-func writeJSON(w http.ResponseWriter, status int, data any) {
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Println("Error encoding response:", err)
-	}
-}
 
-func writeError(w http.ResponseWriter, status int, message string) {
-	writeJSON(w, status, model.NewOutputError(message))
-}
-
-// func (h *MessageHander) HandleMesseges(w http.ResponseWriter, r *http.Request) {
-// 	log.Println(r.Method)
-// 	w.Header().Set("Content-type", "application/json")
-// 	switch r.Method {
-// 	case http.MethodGet:
-// 		h.HandleGetMessageHistory(w, r)
-// 	case http.MethodPost:
-// 		h.HandleSendMessage(w, r)
-// 	case http.MethodPatch:
-// 		h.HandleUpdateMessage(w, r)
-// 	case http.MethodDelete:
-// 		h.HandleDeleteMessage(w, r)
-// 	default:
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 	}
-// }
-
-func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 	var input model.EditMessageRequest
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Bad json", http.StatusBadRequest)
-		return
+
+	if err := c.Bind().Body(&input); err != nil {
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad json")
 	}
-	userId, _ := auth.UserFromContext(r.Context())
+
+	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
+	userId := claims.Subject
 
 	if userId == "" {
-		http.Error(w, "Missing user information", http.StatusUnauthorized)
-		return
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Missing user information")
 	}
 
 	input.UserId = userId
@@ -76,26 +41,23 @@ func (h *MessageHander) HandleUpdateMessage(w http.ResponseWriter, r *http.Reque
 	err := h.service.EditMessage(input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(errResp)
-		log.Println(err)
-		return
+		return utils.WriteJsonErrorWithLog(c, status, errResp)
 	}
 
-	writeJSON(w, http.StatusOK, model.NewOutput(true))
+	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h *MessageHander) HandleDeleteMessage(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
 	var input model.DeleteMessageRequest
-	if err := json.NewDecoder(r.Body).Decode(&input); err != nil {
-		http.Error(w, "Bad json", http.StatusBadRequest)
-		return
+	if err := c.Bind().Body(&input); err != nil {
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad json")
 	}
-	userId, _ := auth.UserFromContext(r.Context())
+
+	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
+	userId := claims.Subject
 
 	if userId == "" {
-		http.Error(w, "Missing user information", http.StatusUnauthorized)
-		return
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusUnauthorized, "Missing user information")
 	}
 
 	input.UserId = userId
@@ -103,63 +65,47 @@ func (h *MessageHander) HandleDeleteMessage(w http.ResponseWriter, r *http.Reque
 	err := h.service.DeleteMessage(input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(errResp)
-		log.Println(err)
-		return
+		return utils.WriteJsonErrorWithLog(c, status, errResp)
 	}
 
-	writeJSON(w, http.StatusOK, model.NewOutput(true))
-
+	return c.SendStatus(fiber.StatusOK)
 }
 
-func (h *MessageHander) HandleGetMessageHistory(w http.ResponseWriter, r *http.Request) {
+func (h *MessageHander) HandleGetMessageHistory(c fiber.Ctx) error{
 	var input model.InputHistory
 
-	if err := decoder.Decode(&input, r.URL.Query()); err != nil {
-		writeError(w, http.StatusBadRequest, "Bad request")
-		log.Println(err)
-		return
+	if err := c.Bind().Query(&input); err != nil {
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad request")
 	}
 
-	values, _ := url.ParseQuery(r.URL.RawQuery)
-	if _, exists := values["limit"]; !exists {
-		writeError(w, http.StatusBadRequest, "Bad request")
-		log.Println("No `limit` in query")
-		return
+	queries := c.Queries()
+
+	if _, exists := queries["limit"]; !exists {
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "No `limit` in query")
 	}
 
 	if input.Limit < 1 {
-		errorMessage := "Invalid `limit` value"
-		writeError(w, http.StatusBadRequest, errorMessage)
-		log.Println(errorMessage)
-		return
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Invalid `limit` value")
 	}
 
 	messages, err := h.service.GetMessageHistory(input.Limit)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
-		w.WriteHeader(status)
-		json.NewEncoder(w).Encode(errResp)
-		log.Println(err)
-		return
+		return utils.WriteJsonErrorWithLog(c, status, errResp)
 	}
 
-	writeJSON(w, http.StatusOK, model.NewOutputGetHistory(messages))
+	return c.Status(fiber.StatusOK).JSON(model.NewOutputGetHistory(messages))
 }
 
 func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 	var input model.InputMessage
 
 	if err := c.Bind().Body(&input); err != nil {
-		log.Println(err)
-		return utils.WriteJsonError(c, fiber.StatusBadRequest, "bad request")
+		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad request")
 	}
 
 	if input.Content == "" {
-		errorMessage := "Content was not passed or its empty"
-		log.Println(errorMessage)
-		return utils.WriteJsonError(c, fiber.StatusBadRequest, errorMessage)
+		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest,  "Content was not passed or is empty")
 	}
 
 	user := jwtware.FromContext(c)
@@ -169,9 +115,7 @@ func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 	username := claims.Username
 
 	if userId == "" || username == "" {
-		errorMessage := "user information missing"
-		log.Println(errorMessage)
-		return utils.WriteJsonError(c, fiber.StatusBadRequest, errorMessage)
+		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest,  "User information missing")
 	}
 
 	input.UserId = userId
@@ -179,9 +123,8 @@ func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 	resp, err := h.service.SendMessage(input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
-		log.Println(err)
-		return utils.WriteJsonError(c, status, errResp)
+		return utils.WriteJsonErrorWithLog(c, status, errResp)
 	}
 
-	return c.JSON(resp)
+	return c.Status(fiber.StatusOK).JSON(resp)
 }

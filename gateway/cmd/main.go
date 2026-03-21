@@ -10,6 +10,7 @@ import (
 	"gateway/internal/handler"
 	"gateway/internal/model"
 	"gateway/internal/service"
+	"gateway/internal/utils"
 	"log"
 	"time"
 
@@ -22,10 +23,15 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+
+
 func main() {
 	config.Load()
 
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		ErrorHandler: utils.AppErrorHandler,
+	})
+
 	app.Use(cors.New())	
 	api := app.Group("/api")
 	
@@ -57,14 +63,14 @@ func main() {
 	roomHandler := handler.NewRoomHandler(roomService)
 
 	// ─── Auth ───────────────────────────────────────────────────────
-	authClient := auth.NewMinimalClient("authClient", time.Minute*10)
+	authClient := auth.NewMinimalClient("authClient", time.Minute*100)
 	authService := auth.NewMinimalService(authClient)
 	authHandler := auth.NewAuthHandler(authService)
 
 	jwtSuccessHandler := func(c fiber.Ctx) error{
 		claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
 		if claims.TokenType != "Auth"{
-			return fiber.ErrUnauthorized
+			return utils.WriteErrorMessageWithLog(c, fiber.ErrUnauthorized.Code, fiber.ErrUnauthorized.Message)
 		}
 		return c.Next()
 	}
@@ -73,6 +79,15 @@ func main() {
 		c.Status(fiber.StatusOK)
 		return c.JSON(fiber.Map{"status": "ok"})
 	}
+
+	jwtVerifyMiddleware := jwtware.New(
+		jwtware.Config{
+			SigningKey: jwtware.SigningKey{Key: []byte(config.Cfg.Auth.JwtSecret)},
+			Extractor: extractors.FromAuthHeader("Bearer"),
+			Claims: &model.UserClaims{},
+			SuccessHandler: jwtSuccessHandler,
+			ErrorHandler: utils.JwtErrorHandler,
+	})
 
 	// ─── Routes ─────────────────────────────────────────────────────
 
@@ -87,13 +102,7 @@ func main() {
 	messages := v1.Group("/messages")
 
 
-	messages.Use(jwtware.New(
-		jwtware.Config{
-			SigningKey: jwtware.SigningKey{Key: []byte(config.Cfg.Auth.JwtSecret)},
-			Extractor: extractors.FromAuthHeader("Bearer"),
-			Claims: &model.UserClaims{},
-			SuccessHandler: jwtSuccessHandler,
-	}))
+	messages.Use(jwtVerifyMiddleware)
 
 	// messages.All("/messages", auth.AuthMiddleware(msgHandler.HandleMesseges))
 	messages.Get("/", msgHandler.HandleGetMessageHistory)
@@ -105,18 +114,19 @@ func main() {
 	// Room routes
 
 	rooms := v1.Group("/rooms")
+	rooms.Use(jwtVerifyMiddleware)
 
-	rooms.All("/", auth.AuthMiddleware(roomHandler.HandleRooms))
-	rooms.All("/details", auth.AuthMiddleware(roomHandler.HandleRoomDetails))
-	rooms.All("/members", auth.AuthMiddleware(roomHandler.HandleMembers))
-	rooms.All("/leave", auth.AuthMiddleware(roomHandler.HandleLeaveRoom))
-	rooms.All("/remove-member", auth.AuthMiddleware(roomHandler.HandleRemoveMember))
-	rooms.All("/invites", auth.AuthMiddleware(roomHandler.HandleInvites))
-	rooms.All("/invites/join", auth.AuthMiddleware(roomHandler.HandleJoinViaInvite))
-	rooms.All("/join-requests", auth.AuthMiddleware(roomHandler.HandleJoinRequests))
-	rooms.All("/join-requests/respond", auth.AuthMiddleware(roomHandler.HandleRespondToJoinRequest))
-	rooms.All("/mark-read", auth.AuthMiddleware(roomHandler.HandleMarkAsRead))
-	rooms.All("/unread", auth.AuthMiddleware(roomHandler.HandleUnreadCount))
+	rooms.All("/", roomHandler.HandleRooms)
+	rooms.All("/details", roomHandler.HandleRoomDetails)
+	rooms.All("/members", roomHandler.HandleMembers)
+	rooms.Post("/leave", roomHandler.HandleLeaveRoom)
+	rooms.Post("/remove-member", roomHandler.HandleRemoveMember)
+	rooms.All("/invites", roomHandler.HandleInvites)
+	rooms.Post("/invites/join", roomHandler.HandleJoinViaInvite)
+	rooms.All("/join-requests", roomHandler.HandleJoinRequests)
+	rooms.Post("/join-requests/respond", roomHandler.HandleRespondToJoinRequest)
+	rooms.Post("/mark-read", roomHandler.HandleMarkAsRead)
+	rooms.Get("/unread", roomHandler.HandleUnreadCount)
 
 	// handlerCORS := cors.Default().Handler(mux)
 
