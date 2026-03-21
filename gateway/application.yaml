@@ -5,4 +5,4 @@ services:
   message:
     address: "message-service:50051"
   room:
-    address: "localhost:50052"
+    address: "room-service:50052"
