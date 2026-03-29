@@ -63,7 +63,7 @@ func main() {
 	roomHandler := handler.NewRoomHandler(roomService)
 
 	// ─── Auth ───────────────────────────────────────────────────────
-	authClient := auth.NewMinimalClient("authClient", time.Minute*100)
+	authClient := auth.NewMinimalClient("authClient", time.Minute*time.Duration(config.Cfg.Auth.TokenLifespan))
 	authService := auth.NewMinimalService(authClient)
 	authHandler := auth.NewAuthHandler(authService)
 
