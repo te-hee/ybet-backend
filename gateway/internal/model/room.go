@@ -3,8 +3,8 @@ package model
 // ─── Room CRUD ──────────────────────────────────────────────────────
 
 type CreateRoomRequest struct {
-	Name      string `json:"name"`
-	IsPrivate bool   `json:"is_private"`
+	Name      string `json:"name" validate:"required"`
+	IsPrivate bool   `json:"is_private" validate:"required"`
 	GroupId   string `json:"group_id,omitempty"`
 }
 
@@ -25,8 +25,8 @@ type RoomResponse struct {
 }
 
 type UpdateRoomNameRequest struct {
-	RoomUUID string `json:"room_uuid"`
-	Name     string `json:"name"`
+	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+	Name     string `json:"name" validate:"required"`
 }
 
 type UserRoom struct {
@@ -38,6 +38,15 @@ type UserRoom struct {
 	UpdatedAt   int64  `json:"updated_at"`
 }
 
+type GetRoomRequest struct{
+	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
+}
+
+type DeleteRoomRequst struct{
+	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
+}
+
+
 // ─── Membership ─────────────────────────────────────────────────────
 
 type RoomMember struct {
@@ -46,16 +55,24 @@ type RoomMember struct {
 }
 
 type RemoveMemberRequest struct {
-	RoomUUID string `json:"room_uuid"`
-	UserUUID string `json:"user_uuid"`
+	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+	UserUUID string `json:"user_uuid" validate:"required,uuid"`
+}
+
+type GetRoomMembersRequest struct{
+	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
+}
+
+type LeaveRoomRequest struct{
+	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
 }
 
 // ─── Invite Links ───────────────────────────────────────────────────
 
 type CreateInviteRequest struct {
-	RoomUUID  string `json:"room_uuid"`
-	UsesLeft  int32  `json:"uses_left"`
-	ExpiresAt int64  `json:"expires_at,omitempty"`
+	RoomUUID  string `json:"room_uuid" validate:"required,uuid"`
+	UsesLeft  int32  `json:"uses_left" validate:"required"`
+	ExpiresAt int64  `json:"expires_at,omitempty" validate:"required"`
 }
 
 type CreateInviteResponse struct {
@@ -71,15 +88,24 @@ type InviteResponse struct {
 }
 
 type DeleteInviteRequest struct {
-	InviteID string `json:"invite_id"`
-	RoomUUID string `json:"room_uuid"`
+	InviteID string `json:"invite_id" validate:"required,uuid"`
+	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+}
+
+
+type GetInviteRequest struct{
+	InvieID string `query:"invite_id" validate:"required,uuid"`
+}
+
+type JoinViaInviteRequest struct{
+	InviteID string `json:"invite_id" validate:"required,uuid"`
 }
 
 // ─── Join Requests ──────────────────────────────────────────────────
 
 type CreateJoinRequestRequest struct {
-	RoomUUID  string `json:"room_uuid"`
-	PublicKey string `json:"public_key"`
+	RoomUUID  string `json:"room_uuid" validate:"required,uuid"`
+	PublicKey string `json:"public_key" validate:"required"`
 }
 
 type JoinRequestResponse struct {
@@ -91,19 +117,35 @@ type JoinRequestResponse struct {
 	CreatedAt int64  `json:"created_at"`
 }
 
+type Decision string
+
+const(
+	ACCEPTED Decision = "ACCEPTED"
+	REJECTED Decision = "REJECTED"
+)
+
 type RespondToJoinRequestRequest struct {
-	RoomUUID string `json:"room_uuid"`
-	UserUUID string `json:"user_uuid"`
-	Decision string `json:"decision"`
+	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+	UserUUID string `json:"user_uuid" validate:"required,uuid"`
+	Decision Decision `json:"decision" validate:"required,oneof=ACCEPTED REJECTED"`
 }
+
+type GetJoinReqeustRequest struct{
+	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
+}
+
 
 // ─── Unread Tracking ────────────────────────────────────────────────
 
 type MarkAsReadRequest struct {
-	RoomUUID          string `json:"room_uuid"`
-	LastReadMessageID string `json:"last_read_message_id"`
+	RoomUUID          string `json:"room_uuid" validate:"required,uuid"`
+	LastReadMessageID string `json:"last_read_message_id" validate:"required,uuid"`
 }
 
 type UnreadCountResponse struct {
 	UnreadCount int32 `json:"unread_count"`
+}
+
+type UnreadCountReqeust struct{
+	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
 }

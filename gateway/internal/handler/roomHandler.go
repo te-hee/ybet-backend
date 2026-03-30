@@ -92,16 +92,13 @@ func handleGRPCError(c fiber.Ctx, err error) error {
 func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	var input model.CreateRoomRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest,"Bad json")
+	input, outputErr := utils.ValidateBody[model.CreateRoomRequest](c)  
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.Name == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Room name is required")
-	}
-
-	resp, err := h.service.CreateRoom(token.Raw, input)
+	resp, err := h.service.CreateRoom(token.Raw, *input)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -112,12 +109,14 @@ func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	roomUUID := fiber.Query[string](c, "room_uuid")
-	if roomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is required" )
+	input, outputErr := utils.ValidateQuery[model.GetRoomRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	resp, err := h.service.GetRoom(token.Raw, roomUUID)
+
+	resp, err := h.service.GetRoom(token.Raw, input.RoomUUID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -128,16 +127,13 @@ func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input model.UpdateRoomNameRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.UpdateRoomNameRequest](c) 
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" || input.Name == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid and name are required")
-	}
-
-	if err := h.service.UpdateRoomName(token.Raw, input); err != nil {
+	if err := h.service.UpdateRoomName(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -147,12 +143,13 @@ func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 func (h *RoomHandler) HandleDeleteRoom(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 	
-	roomUUID := fiber.Query[string](c, "room_uuid")
-	if roomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is required")
+	input, outputErr := utils.ValidateQuery[model.DeleteRoomRequst](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if err := h.service.DeleteRoom(token.Raw, roomUUID); err != nil {
+	if err := h.service.DeleteRoom(token.Raw, input.RoomUUID); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -176,12 +173,13 @@ func (h *RoomHandler) HandleGetUserRooms(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetRoomMembers(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	roomUUID := fiber.Query[string](c, "room_uuid")
-	if roomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is required")
+	input, outputErr := utils.ValidateQuery[model.GetRoomMembersRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	members, err := h.service.GetRoomMembers(token.Raw, roomUUID)
+	members, err := h.service.GetRoomMembers(token.Raw, input.RoomUUID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -192,16 +190,10 @@ func (h *RoomHandler) HandleGetRoomMembers(c fiber.Ctx) error {
 func (h *RoomHandler) HandleLeaveRoom(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input struct {
-		RoomUUID string `json:"room_uuid"`
-	}
+	input, outputErr := utils.ValidateBody[model.LeaveRoomRequest](c)
 
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
-	}
-
-	if input.RoomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest,  "room_uuid is required")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	if err := h.service.LeaveRoom(token.Raw, input.RoomUUID); err != nil {
@@ -214,17 +206,13 @@ func (h *RoomHandler) HandleLeaveRoom(c fiber.Ctx) error{
 func (h *RoomHandler) HandleRemoveMember(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input model.RemoveMemberRequest
+	input, outputErr := utils.ValidateBody[model.RemoveMemberRequest](c)
 
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" || input.UserUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid and user_uuid are required")
-	}
-
-	if err := h.service.RemoveMember(token.Raw, input); err != nil {
+	if err := h.service.RemoveMember(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -236,16 +224,13 @@ func (h *RoomHandler) HandleRemoveMember(c fiber.Ctx) error{
 func (h *RoomHandler) HandleCreateInvite(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input model.CreateInviteRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.CreateInviteRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is requied")
-	}
-
-	resp, err := h.service.CreateInvite(token.Raw, input)
+	resp, err := h.service.CreateInvite(token.Raw, *input)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -256,12 +241,13 @@ func (h *RoomHandler) HandleCreateInvite(c fiber.Ctx) error{
 func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	inviteID := fiber.Query[string](c, "invite_id")
-	if inviteID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "invite_id is required")
+	input, outputErr := utils.ValidateQuery[model.GetInviteRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	resp, err := h.service.GetInvite(token.Raw, inviteID)
+	resp, err := h.service.GetInvite(token.Raw, input.InvieID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -272,16 +258,14 @@ func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	var input model.DeleteInviteRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.DeleteInviteRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.InviteID == "" || input.RoomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "invite_id and room_uuid are required")
-	}
-
-	if err := h.service.DeleteInvite(token.Raw, input); err != nil {
+	
+	if err := h.service.DeleteInvite(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -291,16 +275,10 @@ func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 func (h *RoomHandler) HandleJoinViaInvite(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input struct {
-		InviteID string `json:"invite_id"`
-	}
+	input, outputErr := utils.ValidateBody[model.JoinViaInviteRequest](c)
 
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
-	}
-
-	if input.InviteID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "invite_id is required")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	if err := h.service.JoinViaInvite(token.Raw, input.InviteID); err != nil {
@@ -315,16 +293,13 @@ func (h *RoomHandler) HandleJoinViaInvite(c fiber.Ctx) error{
 func (h *RoomHandler) HandleCreateJoinRequest(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	var input model.CreateJoinRequestRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.CreateJoinRequestRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" || input.PublicKey == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid and public_key are required")
-	}
-
-	if err := h.service.CreateJoinRequest(token.Raw, input); err != nil {
+	if err := h.service.CreateJoinRequest(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -334,12 +309,13 @@ func (h *RoomHandler) HandleCreateJoinRequest(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetJoinRequests(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	roomUUID := fiber.Query[string](c, "room_uuid")
-	if roomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is required")
+	input, outputErr := utils.ValidateQuery[model.GetJoinReqeustRequest](c)
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	requests, err := h.service.GetJoinRequests(token.Raw, roomUUID)
+	requests, err := h.service.GetJoinRequests(token.Raw, input.RoomUUID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -350,20 +326,13 @@ func (h *RoomHandler) HandleGetJoinRequests(c fiber.Ctx) error {
 func (h *RoomHandler) HandleRespondToJoinRequest(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	var input model.RespondToJoinRequestRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.RespondToJoinRequestRequest](c) 
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" || input.UserUUID == "" || input.Decision == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid, user_uuid, and decision are required")
-	}
-
-	if input.Decision != "ACCEPTED" && input.Decision != "REJECTED" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "decision must be ACCEPTED or REJECTED")
-	}
-
-	if err := h.service.RespondToJoinRequest(token.Raw, input); err != nil {
+	if err := h.service.RespondToJoinRequest(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -375,16 +344,13 @@ func (h *RoomHandler) HandleRespondToJoinRequest(c fiber.Ctx) error {
 func (h *RoomHandler) HandleMarkAsRead(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	var input model.MarkAsReadRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.MarkAsReadRequest](c) 
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	if input.RoomUUID == "" || input.LastReadMessageID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid and last_read_message_id are required")
-	}
-
-	if err := h.service.MarkAsRead(token.Raw, input); err != nil {
+	if err := h.service.MarkAsRead(token.Raw, *input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -394,12 +360,14 @@ func (h *RoomHandler) HandleMarkAsRead(c fiber.Ctx) error{
 func (h *RoomHandler) HandleUnreadCount(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	roomUUID := fiber.Query[string](c, "room_uuid")
-	if roomUUID == "" {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "room_uuid is required")
+	input, outputErr := utils.ValidateQuery[model.UnreadCountReqeust](c)
+
+
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
-	resp, err := h.service.GetUnreadCount(token.Raw, roomUUID)
+	resp, err := h.service.GetUnreadCount(token.Raw, input.RoomUUID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}

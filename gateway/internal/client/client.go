@@ -39,7 +39,7 @@ func (c MessageServiceClient) GetMessageHistory(limit uint32) (_ []model.Message
 	}
 	return messages, nil
 }
-func (c MessageServiceClient) SendMessage(message model.InputMessage) (*model.OutputSendMessege, error) {
+func (c MessageServiceClient) SendMessage(message model.SendMessageRequest) (*model.OutputSendMessege, error) {
 	request := &messagev2.SendMessageRequest{
 		UserId:   message.UserId,
 		Username: message.Username,

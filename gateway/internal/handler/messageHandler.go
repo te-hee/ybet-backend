@@ -23,10 +23,10 @@ func NewMessageHandler(service *service.MessageService) *MessageHander {
 
 
 func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
-	var input model.EditMessageRequest
+	input, outputErr := utils.ValidateBody[model.EditMessageRequest](c)
 
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad json")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
@@ -38,7 +38,7 @@ func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 
 	input.UserId = userId
 
-	err := h.service.EditMessage(input)
+	err := h.service.EditMessage(*input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
 		return utils.WriteJsonErrorWithLog(c, status, errResp)
@@ -48,9 +48,10 @@ func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 }
 
 func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
-	var input model.DeleteMessageRequest
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad json")
+	input, outputErr := utils.ValidateBody[model.DeleteMessageRequest](c)
+	
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
@@ -62,7 +63,7 @@ func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
 
 	input.UserId = userId
 
-	err := h.service.DeleteMessage(input)
+	err := h.service.DeleteMessage(*input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
 		return utils.WriteJsonErrorWithLog(c, status, errResp)
@@ -72,10 +73,10 @@ func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
 }
 
 func (h *MessageHander) HandleGetMessageHistory(c fiber.Ctx) error{
-	var input model.InputHistory
+	input, outputErr := utils.ValidateBody[model.GetHistoryRequest](c)
 
-	if err := c.Bind().Query(&input); err != nil {
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, "Bad request")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	queries := c.Queries()
@@ -98,10 +99,10 @@ func (h *MessageHander) HandleGetMessageHistory(c fiber.Ctx) error{
 }
 
 func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
-	var input model.InputMessage
+	input, outputErr := utils.ValidateBody[model.SendMessageRequest](c)
 
-	if err := c.Bind().Body(&input); err != nil {
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "Bad request")
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
 	}
 
 	if input.Content == "" {
@@ -120,7 +121,7 @@ func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 
 	input.UserId = userId
 	input.Username = username
-	resp, err := h.service.SendMessage(input)
+	resp, err := h.service.SendMessage(*input)
 	if err != nil {
 		status, errResp := utils.GRPCToHTTPResponse(err)
 		return utils.WriteJsonErrorWithLog(c, status, errResp)

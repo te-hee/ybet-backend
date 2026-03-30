@@ -19,20 +19,17 @@ func NewAuthHandler(service Service) *AuthHandler {
 }
 
 func (h *AuthHandler) HandleLogin(c fiber.Ctx) error{
+	loginData, outputErr := utils.ValidateBody[model.LoginRequest](c) 
 
-	var loginData model.LoginRequest
-
-	if err := c.Bind().Body(&loginData); err != nil {
-		log.Println(err)
-		return utils.WriteErrorMessageWithLog(c, fiber.StatusBadRequest, "bad json")
-
+	if outputErr != nil{
+		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest,outputErr) 
 	}
 
 	token, err := h.service.GenerateToken(loginData.Username)
 
 	if err != nil {
 		log.Println(err)
-		return utils.WriteErrorMessageWithLog(c,fiber.StatusInternalServerError,  "error generating JWT token")
+		return utils.WriteErrorMessageWithLog(c,fiber.StatusInternalServerError,  "Error generating JWT token")
 	}
 
 	resp := model.LoginResponse{
