@@ -92,13 +92,12 @@ func handleGRPCError(c fiber.Ctx, err error) error {
 func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.CreateRoomRequest](c)  
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.CreateRoomRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	resp, err := h.service.CreateRoom(token.Raw, *input)
+	resp, err := h.service.CreateRoom(token.Raw, input)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -109,10 +108,9 @@ func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateQuery[model.GetRoomRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.GetRoomRequest
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 
@@ -127,13 +125,12 @@ func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.UpdateRoomNameRequest](c) 
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.UpdateRoomNameRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	if err := h.service.UpdateRoomName(token.Raw, *input); err != nil {
+	if err := h.service.UpdateRoomName(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -143,10 +140,9 @@ func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 func (h *RoomHandler) HandleDeleteRoom(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 	
-	input, outputErr := utils.ValidateQuery[model.DeleteRoomRequst](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.DeleteRoomRequst
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 	if err := h.service.DeleteRoom(token.Raw, input.RoomUUID); err != nil {
@@ -173,10 +169,9 @@ func (h *RoomHandler) HandleGetUserRooms(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetRoomMembers(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateQuery[model.GetRoomMembersRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.GetRoomMembersRequest
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 	members, err := h.service.GetRoomMembers(token.Raw, input.RoomUUID)
@@ -190,10 +185,9 @@ func (h *RoomHandler) HandleGetRoomMembers(c fiber.Ctx) error {
 func (h *RoomHandler) HandleLeaveRoom(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.LeaveRoomRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.LeaveRoomRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
 	if err := h.service.LeaveRoom(token.Raw, input.RoomUUID); err != nil {
@@ -206,13 +200,12 @@ func (h *RoomHandler) HandleLeaveRoom(c fiber.Ctx) error{
 func (h *RoomHandler) HandleRemoveMember(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.RemoveMemberRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.RemoveMemberRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	if err := h.service.RemoveMember(token.Raw, *input); err != nil {
+	if err := h.service.RemoveMember(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -224,13 +217,12 @@ func (h *RoomHandler) HandleRemoveMember(c fiber.Ctx) error{
 func (h *RoomHandler) HandleCreateInvite(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.CreateInviteRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.CreateInviteRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	resp, err := h.service.CreateInvite(token.Raw, *input)
+	resp, err := h.service.CreateInvite(token.Raw, input)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -241,10 +233,9 @@ func (h *RoomHandler) HandleCreateInvite(c fiber.Ctx) error{
 func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateQuery[model.GetInviteRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.GetInviteRequest
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 	resp, err := h.service.GetInvite(token.Raw, input.InvieID)
@@ -258,14 +249,12 @@ func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.DeleteInviteRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.DeleteInviteRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	
-	if err := h.service.DeleteInvite(token.Raw, *input); err != nil {
+	if err := h.service.DeleteInvite(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -275,10 +264,9 @@ func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 func (h *RoomHandler) HandleJoinViaInvite(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.JoinViaInviteRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.JoinViaInviteRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
 	if err := h.service.JoinViaInvite(token.Raw, input.InviteID); err != nil {
@@ -293,13 +281,12 @@ func (h *RoomHandler) HandleJoinViaInvite(c fiber.Ctx) error{
 func (h *RoomHandler) HandleCreateJoinRequest(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.CreateJoinRequestRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.CreateJoinRequestRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	if err := h.service.CreateJoinRequest(token.Raw, *input); err != nil {
+	if err := h.service.CreateJoinRequest(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -309,10 +296,9 @@ func (h *RoomHandler) HandleCreateJoinRequest(c fiber.Ctx) error {
 func (h *RoomHandler) HandleGetJoinRequests(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateQuery[model.GetJoinReqeustRequest](c)
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.GetJoinReqeustRequest
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 	requests, err := h.service.GetJoinRequests(token.Raw, input.RoomUUID)
@@ -326,13 +312,12 @@ func (h *RoomHandler) HandleGetJoinRequests(c fiber.Ctx) error {
 func (h *RoomHandler) HandleRespondToJoinRequest(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.RespondToJoinRequestRequest](c) 
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.RespondToJoinRequestRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	if err := h.service.RespondToJoinRequest(token.Raw, *input); err != nil {
+	if err := h.service.RespondToJoinRequest(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -344,13 +329,12 @@ func (h *RoomHandler) HandleRespondToJoinRequest(c fiber.Ctx) error {
 func (h *RoomHandler) HandleMarkAsRead(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateBody[model.MarkAsReadRequest](c) 
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.MarkAsReadRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	if err := h.service.MarkAsRead(token.Raw, *input); err != nil {
+	if err := h.service.MarkAsRead(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)
 	}
 
@@ -360,11 +344,9 @@ func (h *RoomHandler) HandleMarkAsRead(c fiber.Ctx) error{
 func (h *RoomHandler) HandleUnreadCount(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
-	input, outputErr := utils.ValidateQuery[model.UnreadCountReqeust](c)
-
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest, outputErr)
+	var input model.UnreadCountReqeust
+	if err := c.Bind().Query(&input); err != nil{
+		return err
 	}
 
 	resp, err := h.service.GetUnreadCount(token.Raw, input.RoomUUID)

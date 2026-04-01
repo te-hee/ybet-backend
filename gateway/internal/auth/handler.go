@@ -19,13 +19,12 @@ func NewAuthHandler(service Service) *AuthHandler {
 }
 
 func (h *AuthHandler) HandleLogin(c fiber.Ctx) error{
-	loginData, outputErr := utils.ValidateBody[model.LoginRequest](c) 
-
-	if outputErr != nil{
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusBadRequest,outputErr) 
+	var input model.LoginRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	token, err := h.service.GenerateToken(loginData.Username)
+	token, err := h.service.GenerateToken(input.Username)
 
 	if err != nil {
 		log.Println(err)

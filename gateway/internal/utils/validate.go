@@ -1,75 +1,46 @@
 package utils
 
 import (
-	"gateway/internal/model"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v3"
 )
 
-var validate = validator.New()
-
-func validateStruct(s interface{}) *model.OutputError {
-    var errorsMessages []string
-    err := validate.Struct(s)
-    if err != nil {
-        for _, err := range err.(validator.ValidationErrors) {
-            errorsMessages = append(errorsMessages, formatError(err))
-        }
-    }
-
-
-		if len(errorsMessages) == 0{
-			return nil
-		}
-
-		errorMessage := strings.Join(errorsMessages, ",")
-		error := model.NewOutputError(errorMessage)
-    return &error
+type ValidatorStruct struct{
+	validate *validator.Validate
 }
 
-func formatError(err validator.FieldError) string {
-    switch err.Tag() {
-    case "required":
-        return err.Field() + " is requierd"
-    case "uuid":
-        return err.Field() + " needs to be in a uuid format"
-    case "min":
-        return err.Field() + " minimal length is "+ err.Param()
-    case "max":
-        return err.Field() + " maximal lengtth is " + err.Param()
-    case "oneof":
-				return err.Field() + " needs to be of of thoe values: " + err.Param()
-    default:
-        return err.Field() + " is invalid"
-    }
+
+func (v *ValidatorStruct)Validate(out any) error {
+    return v.validate.Struct(out)
 }
 
-func ValidateQuery[T any](c fiber.Ctx) (*T, *model.OutputError){
-	query := new(T)
-	if err := c.Bind().Query(&query); err != nil{
-		outputErr := model.NewOutputError("Bad query")
-		return nil,  &outputErr
-	}
-
-	if outputErr := validateStruct(query); outputErr != nil{
-		return nil,  outputErr
-	}
-
-	return query, nil
+func NewValidateStruct() *ValidatorStruct{
+	return &ValidatorStruct{validate: validator.New()}
 }
 
-func ValidateBody[T any](c fiber.Ctx) (*T, *model.OutputError){
-	body := new(T)
-	if err := c.Bind().Body(&body); err != nil{
-		outputErr := model.NewOutputError("Bad json")
-		return nil,  &outputErr
-	}
+func formatError(errs validator.ValidationErrors) string {
+	
+	var errorMessages []string
 
-	if outputErr := validateStruct(body); outputErr != nil{
-		return nil,  outputErr
+	for _, err := range errs {
+		switch err.Tag() {
+				case "required":
+						errorMessages = append(errorMessages, err.Field() + " is requierd")
+				case "uuid":
+						errorMessages = append(errorMessages, err.Field() + " needs to be in a uuid format")
+				case "min":
+						errorMessages = append(errorMessages, err.Field() + " minimal length is "+ err.Param())
+				case "max":
+						errorMessages = append(errorMessages, err.Field() + " maximal lengtth is " + err.Param())
+				case "oneof":
+						errorMessages = append(errorMessages, err.Field() + " needs to be of of thoe values: " + err.Param())
+				default:
+						errorMessages = append(errorMessages, err.Field() + " is invalid")
+				}
 	}
-
-	return body, nil
+	
+	return  strings.Join(errorMessages, ", ")
 }
+
+

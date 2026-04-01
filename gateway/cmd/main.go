@@ -28,8 +28,15 @@ import (
 func main() {
 	config.Load()
 
+	// ─── Validator ──────────────────────────────────────────────────
+
+	validatorStruct := utils.NewValidateStruct()
+
+	// ─── App Configuration ──────────────────────────────────────────
+
 	app := fiber.New(fiber.Config{
 		ErrorHandler: utils.AppErrorHandler,
+		StructValidator: validatorStruct,
 	})
 
 	app.Use(cors.New())	
@@ -95,25 +102,22 @@ func main() {
 
 	v1.Get("/health", healthHandler)
 	v1.Post("/login", authHandler.HandleLogin)
-	// mux.HandleFunc("/login", authHandler.HandleLogin)
+
+	endPointsWithJWTValidation := v1.Group("/")
+	endPointsWithJWTValidation.Use(jwtVerifyMiddleware)
 
 	// ─── Messagges ──────────────────────────────────────────────────
 
-	messages := v1.Group("/messages")
+	messages := endPointsWithJWTValidation.Group("/messages")
 
-
-	messages.Use(jwtVerifyMiddleware)
-
-	// messages.All("/messages", auth.AuthMiddleware(msgHandler.HandleMesseges))
 	messages.Get("/", msgHandler.HandleGetMessageHistory)
 	messages.Post("/", msgHandler.HandleSendMessage)
 	messages.Patch("/", msgHandler.HandleUpdateMessage)
 	messages.Delete("/", msgHandler.HandleDeleteMessage)
-	// mux.HandleFunc("/messages", auth.AuthMiddleware(msgHandler.HandleMesseges))
 
 	// Room routes
 
-	rooms := v1.Group("/rooms")
+	rooms := endPointsWithJWTValidation.Group("/rooms")
 	rooms.Use(jwtVerifyMiddleware)
 
 	rooms.All("/", roomHandler.HandleRooms)
@@ -128,8 +132,6 @@ func main() {
 	rooms.Post("/mark-read", roomHandler.HandleMarkAsRead)
 	rooms.Get("/unread", roomHandler.HandleUnreadCount)
 
-	// handlerCORS := cors.Default().Handler(mux)
-
 	log.Println("Running server on port:", config.Cfg.Server.Port)
 	log.Println("Connected to message service on:", config.Cfg.Services.Message.Address)
 	log.Println("Connected to room service on:", config.Cfg.Services.Room.Address)
@@ -139,9 +141,5 @@ func main() {
 	if err != nil{
 		panic(err)
 	}
-
-	// if err := http.ListenAndServe(":"+config.Cfg.Server.Port, handlerCORS); err != nil {
-	// 	panic(err)
-	// }
 
 }
