@@ -1,11 +1,11 @@
 package model
 
-type InputMessage struct {
-	Content  string `json:"content"`
-	UserId   string
-	Username string
+type SendMessageRequest struct {
+	Content  string `json:"content" validate:"required"`
+	UserId   string `json:"-"`
+	Username string `json:"-"`
 }
 
-type InputHistory struct {
-	Limit uint32 `json:"limit"`
+type GetHistoryRequest struct {
+	Limit uint32 `json:"limit" query:"limit" validate:"required,min=1"`
 }

@@ -1,10 +1,11 @@
 package auth
 
 import (
-	"encoding/json"
 	"gateway/internal/model"
+	"gateway/internal/utils"
 	"log"
-	"net/http"
+
+	"github.com/gofiber/fiber/v3"
 )
 
 type AuthHandler struct {
@@ -17,30 +18,21 @@ func NewAuthHandler(service Service) *AuthHandler {
 	}
 }
 
-func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-type", "application/json")
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+func (h *AuthHandler) HandleLogin(c fiber.Ctx) error{
+	var input model.LoginRequest
+	if err := c.Bind().Body(&input); err != nil{
+		return err
 	}
 
-	var loginData model.LoginRequest
+	token, err := h.service.GenerateToken(input.Username)
 
-	if err := json.NewDecoder(r.Body).Decode(&loginData); err != nil {
-		http.Error(w, "bad json", http.StatusBadRequest)
-		return
-	}
-
-	token, err := h.service.GenerateToken(loginData.Username)
 	if err != nil {
-		http.Error(w, "error generating JWT token", http.StatusInternalServerError)
+		log.Println(err)
+		return utils.WriteErrorMessageWithLog(c,fiber.StatusInternalServerError,  "Error generating JWT token")
 	}
 
-	w.WriteHeader(http.StatusOK)
 	resp := model.LoginResponse{
 		Token: token,
 	}
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.Printf("Error encoding response QwQ: %v", err)
-	}
+	return c.JSON(resp)
 }

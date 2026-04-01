@@ -13,6 +13,7 @@ type ServerConfig struct {
 type AuthConfig struct {
 	Enabled   bool   `mapstructure:"enabled"`
 	JwtSecret string `mapstructure:"jwt_secret"`
+	TokenLifespan uint `mapstructure:"token_lifespan"` // in minutes 
 }
 
 type ServiceEndpoint struct {
@@ -41,6 +42,7 @@ func Load() {
 	viper.SetDefault("server.port", "8080")
 	viper.SetDefault("auth.enabled", true)
 	viper.SetDefault("auth.jwt_secret", "")
+	viper.SetDefault("auth.token_lifespan", 10)
 	viper.SetDefault("services.message.address", "message-service:50051")
 	viper.SetDefault("services.message.api_key", "cute")
 	viper.SetDefault("services.room.address", "localhost:50052")

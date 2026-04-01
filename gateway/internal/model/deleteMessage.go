@@ -1,6 +1,6 @@
 package model
 
 type DeleteMessageRequest struct {
-	MessageId string `json:"message_id,omitempty"`
-	UserId    string
+	MessageId string `uri:"message_id,omitempty" validate:"required,uuid"`
+	UserId    string `json:"-"`
 }

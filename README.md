@@ -141,9 +141,21 @@ Typy `type`:
 
 ---
 
-## Gateway API
+## Gateway API (wszystko pod spodem ma routa /api)
 
-Endpointy:
+### Wersja 1 (Wszystko pod spodem ma routa /v1)
+
+#### Errory
+
+Erorr wystąpi gdy status jest 4XX lub 5XX każdy response errora zwraca:
+```json
+{
+  "error": "string"
+}
+```
+w dalej części zwracane errory są pominięte
+
+#### Endpointy:
 
 * POST   /login
 * GET    /messages
@@ -151,7 +163,7 @@ Endpointy:
 * PATCH  /messages
 * DELETE /messages
 
-### Autoryzacja
+#### Autoryzacja
 
 POST `/login`
 Request:
@@ -178,7 +190,7 @@ Authorization: Bearer <jwt>
 
 ---
 
-## Zmienne środowiskowe
+#### Zmienne środowiskowe
 
 | Zmienna            | Typ     | Opis                              |
 | ------------------ | ------- | --------------------------------- |
@@ -188,9 +200,9 @@ Authorization: Bearer <jwt>
 
 ---
 
-## /messages
+#### /messages
 
-### GET
+##### GET
 
 ```
 /messages?limit=<number>
@@ -200,7 +212,6 @@ Response success:
 
 ```json
 {
-  "success": true,
   "messages": [
     {
         "message_id": "string",
@@ -213,16 +224,7 @@ Response success:
 }
 ```
 
-Response error:
-
-```json
-{
-  "success": false,
-  "error": "string"
-}
-```
-
-### POST
+##### POST
 
 Request:
 
@@ -241,36 +243,38 @@ Response:
 }
 ```
 
-### PATCH
+##### PATCH
 
 Request:
 
+```
+/api/v1/<message id>
+```
+
 ```json
 {
-  "message_id": "string",
   "content": "string"
 }
 ```
 
 Status codes:
-- **200** - udało się :3
-- **400** - zły format json :c
-- **401** - brak header `Authorization Bearer <token>` >~<
-- **403** - nie możesz edytować tej wiadomości >:c 
-- **500** - internal server error lub unknown error TwT
-### DELETE
+- **200** - udało się
+- **400** - zły format json
+- **401** - brak header `Authorization Bearer <token>`
+- **403** - nie możesz edytować tej wiadomości
+- **500** - internal server error lub unknown error
+
+##### DELETE
 
 Request:
 
-```json
-{
-  "message_id": "string"
-}
+```
+/api/v1/messages/<message id>
 ```
 
 Status codes:
-- **200** - udało się :3
-- **400** - zły format json :c
-- **401** - brak header `Authorization Bearer <token>` >~<
-- **403** - nie możesz usunąć tej wiadomości >:c 
-- **500** - internal server error lub unknown error TwT
+- **200** - udało się 
+- **400** - zły format json 
+- **401** - brak header `Authorization Bearer <token>`
+- **403** - nie możesz usunąć tej wiadomości 
+- **500** - internal server error lub unknown error
