@@ -26,16 +26,12 @@ func NewMessageHandler(service *service.MessageService) *MessageHander {
 func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 	var input model.EditMessageRequest
 
-	if err := c.Bind().Body(&input); err != nil{
+	if err := c.Bind().All(&input); err != nil{
 		return err
 	}
 
 	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
 	userId := claims.Subject
-
-	if userId == "" {
-		return fiber.NewError(fiber.StatusBadRequest,  "Missing user information")
-	}
 
 	input.UserId = userId
 
@@ -50,16 +46,12 @@ func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 
 func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
 	var input model.DeleteMessageRequest
-	if err := c.Bind().Body(&input); err != nil{
+	if err := c.Bind().URI(&input); err != nil{
 		return err
 	}
 	
 	claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
 	userId := claims.Subject
-
-	if userId == "" {
-		return fiber.NewError(fiber.StatusBadRequest,  "Missing user information")
-	}
 
 	input.UserId = userId
 
@@ -99,10 +91,6 @@ func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 
 	userId := claims.Subject
 	username := claims.Username
-
-	if userId == "" || username == "" {
-		return fiber.NewError(fiber.StatusBadRequest,   "User information missing")
-	}
 
 	input.UserId = userId
 	input.Username = username

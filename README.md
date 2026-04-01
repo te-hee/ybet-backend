@@ -115,10 +115,11 @@ Typy `type`:
 
 ### deleteMessage
 
-```json
+```
 {
   "message_id": "string"
 }
+
 ```
 
 ### systemMessage
@@ -247,9 +248,13 @@ Response:
 
 Request:
 
+```
+/api/v1/<message id>
+
+```
+
 ```json
 {
-  "message_id": "string",
   "content": "string"
 }
 ```
@@ -265,10 +270,8 @@ Status codes:
 
 Request:
 
-```json
-{
-  "message_id": "string"
-}
+```
+/api/v1/messages/<message id>
 ```
 
 Status codes:

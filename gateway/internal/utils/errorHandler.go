@@ -24,6 +24,15 @@ func AppErrorHandler(c fiber.Ctx, err error) error{
 }
 
 func JwtErrorHandler(c fiber.Ctx, err error) error{
-	return WriteErrorMessageWithLog(c, fiber.StatusUnauthorized, "Missing or malformed JWT")
+	code := fiber.StatusUnauthorized
+	message := "Missing or malformed JWT"
+	
+	var e *fiber.Error
+	if errors.As(err, &e){
+		code = e.Code
+		message = e.Message
+	}
+
+	return WriteErrorMessageWithLog(c, code, message)
 
 }

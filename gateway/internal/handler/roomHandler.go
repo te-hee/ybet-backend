@@ -21,62 +21,30 @@ func NewRoomHandler(service *service.RoomService) *RoomHandler {
 }
 
 // ─── Route Dispatchers ──────────────────────────────────────────────
-
-func (h *RoomHandler) HandleRooms(c fiber.Ctx) error {
-	switch c.Method() {
-	case fiber.MethodGet:
-		return h.HandleGetUserRooms(c)
-	case fiber.MethodPost:
-		return h.HandleCreateRoom(c)
-	case fiber.MethodPatch:
-		return h.HandleUpdateRoomName(c)
-	case fiber.MethodDelete:
-		return h.HandleDeleteRoom(c)
-	default:
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusMethodNotAllowed, "Method not allowed")
-	}
+func (h *RoomHandler) MapRooms(r fiber.Router, route string) {
+	r.Get(route,h.HandleGetUserRooms)
+	r.Post(route, h.HandleCreateRoom)  
+	r.Patch(route+":room_uuid<guid>", h.HandleUpdateRoomName)
+	r.Delete(route+":room_uuid<guid>", h.HandleDeleteRoom)
 }
 
-func (h *RoomHandler) HandleRoomDetails(c fiber.Ctx) error {
-	switch c.Method() {
-	case fiber.MethodGet:
-		return h.HandleGetRoom(c)
-	default:
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusMethodNotAllowed, "Method not allowed")
-	}
+func (h *RoomHandler) MapRoomDetails(r fiber.Router, route string) {
+	r.Get(route,h.HandleGetRoom)
 }
 
-func (h *RoomHandler) HandleMembers(c fiber.Ctx) error{
-	switch c.Method() {
-	case fiber.MethodGet:
-		return h.HandleGetRoomMembers(c)
-	default:
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusMethodNotAllowed, "Method not allowed")
-	}
+func (h *RoomHandler) MapMembers(r fiber.Router, route string) {
+	r.Get(route, h.HandleGetRoomMembers)
 }
 
-func (h *RoomHandler) HandleInvites(c fiber.Ctx) error {
-	switch c.Method() {
-	case fiber.MethodPost:
-		return h.HandleCreateInvite(c)
-	case fiber.MethodGet:
-		return h.HandleGetInvite(c)
-	case fiber.MethodDelete:
-		return h.HandleDeleteInvite(c)
-	default:
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusMethodNotAllowed, "Method not allowed")
-	}
+func (h *RoomHandler) MapInvites(r fiber.Router, route string)  {
+	r.Get(route+"/:invite_id", h.HandleGetInvite)
+	r.Post(route, h.HandleCreateInvite)
+	r.Delete(route+"/:room_uuid<guid>/:invite_id", h.HandleDeleteInvite)
 }
 
-func (h *RoomHandler) HandleJoinRequests(c fiber.Ctx) error{
-	switch c.Method() {
-	case fiber.MethodPost:
-		return h.HandleCreateJoinRequest(c)
-	case fiber.MethodGet:
-		return h.HandleGetJoinRequests(c)
-	default:
-		return utils.WriteJsonErrorWithLog(c, fiber.StatusMethodNotAllowed, "Method not allowed")
-	}
+func (h *RoomHandler) MapJoinRequests(r fiber.Router, router string) {
+	r.Get("/", h.HandleGetJoinRequests)
+	r.Post("/", h.HandleCreateJoinRequest)
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
@@ -113,7 +81,6 @@ func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 		return err
 	}
 
-
 	resp, err := h.service.GetRoom(token.Raw, input.RoomUUID)
 	if err != nil {
 		return handleGRPCError(c, err)
@@ -126,7 +93,7 @@ func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 	token := jwtware.FromContext(c)
 
 	var input model.UpdateRoomNameRequest
-	if err := c.Bind().Body(&input); err != nil{
+	if err := c.Bind().All(&input); err != nil{
 		return err
 	}
 
@@ -141,7 +108,7 @@ func (h *RoomHandler) HandleDeleteRoom(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 	
 	var input model.DeleteRoomRequst
-	if err := c.Bind().Query(&input); err != nil{
+	if err := c.Bind().URI(&input); err != nil{
 		return err
 	}
 
@@ -154,7 +121,6 @@ func (h *RoomHandler) HandleDeleteRoom(c fiber.Ctx) error {
 
 func (h *RoomHandler) HandleGetUserRooms(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
-
 
 	rooms, err := h.service.GetUserRooms(token.Raw)
 	if err != nil {
@@ -234,11 +200,12 @@ func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
 	var input model.GetInviteRequest
-	if err := c.Bind().Query(&input); err != nil{
+
+	if err := c.Bind().URI(&input); err != nil{
 		return err
 	}
-
-	resp, err := h.service.GetInvite(token.Raw, input.InvieID)
+	
+	resp, err := h.service.GetInvite(token.Raw, input.InviteID)
 	if err != nil {
 		return handleGRPCError(c, err)
 	}
@@ -250,9 +217,11 @@ func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 	token := jwtware.FromContext(c)
 
 	var input model.DeleteInviteRequest
-	if err := c.Bind().Body(&input); err != nil{
+
+	if err := c.Bind().URI(&input); err != nil{
 		return err
 	}
+	
 
 	if err := h.service.DeleteInvite(token.Raw, input); err != nil {
 		return handleGRPCError(c, err)

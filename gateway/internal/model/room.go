@@ -25,7 +25,7 @@ type RoomResponse struct {
 }
 
 type UpdateRoomNameRequest struct {
-	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+	RoomUUID string `json:"-" query:"room_uuid" validate:"required,uuid"`
 	Name     string `json:"name" validate:"required"`
 }
 
@@ -43,7 +43,7 @@ type GetRoomRequest struct{
 }
 
 type DeleteRoomRequst struct{
-	RoomUUID string `query:"room_uuid" validate:"required,uuid"`
+	RoomUUID string `uri:"room_uuid" validate:"required,uuid"`
 }
 
 
@@ -88,13 +88,13 @@ type InviteResponse struct {
 }
 
 type DeleteInviteRequest struct {
-	InviteID string `json:"invite_id" validate:"required,uuid"`
-	RoomUUID string `json:"room_uuid" validate:"required,uuid"`
+	InviteID string `uri:"invite_id"`
+	RoomUUID string `uri:"room_uuid"`
 }
 
 
 type GetInviteRequest struct{
-	InvieID string `query:"invite_id" validate:"required,uuid"`
+	InviteID string `uri:"invite_id" validate:"required,uuid"`
 }
 
 type JoinViaInviteRequest struct{

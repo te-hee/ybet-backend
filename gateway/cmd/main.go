@@ -76,9 +76,10 @@ func main() {
 
 	jwtSuccessHandler := func(c fiber.Ctx) error{
 		claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
-		if claims.TokenType != "Auth"{
-			return utils.WriteErrorMessageWithLog(c, fiber.ErrUnauthorized.Code, fiber.ErrUnauthorized.Message)
+		if claims.TokenType != "Auth" || claims.Username == "" || claims.Subject == ""{
+			return fiber.NewError(fiber.ErrUnauthorized.Code, fiber.ErrUnauthorized.Message)
 		}
+		
 		return c.Next()
 	}
 
@@ -112,23 +113,26 @@ func main() {
 
 	messages.Get("/", msgHandler.HandleGetMessageHistory)
 	messages.Post("/", msgHandler.HandleSendMessage)
-	messages.Patch("/", msgHandler.HandleUpdateMessage)
-	messages.Delete("/", msgHandler.HandleDeleteMessage)
+	messages.Patch("/:message_id<guid>", msgHandler.HandleUpdateMessage)
+	messages.Delete("/:message_id<guid>", msgHandler.HandleDeleteMessage)
 
 	// Room routes
 
 	rooms := endPointsWithJWTValidation.Group("/rooms")
 	rooms.Use(jwtVerifyMiddleware)
 
-	rooms.All("/", roomHandler.HandleRooms)
-	rooms.All("/details", roomHandler.HandleRoomDetails)
-	rooms.All("/members", roomHandler.HandleMembers)
+	roomHandler.MapRooms(rooms, "/")
+	roomHandler.MapRoomDetails(rooms, "/details")
 	rooms.Post("/leave", roomHandler.HandleLeaveRoom)
+
+	roomHandler.MapMembers(rooms, "/members")
 	rooms.Post("/remove-member", roomHandler.HandleRemoveMember)
-	rooms.All("/invites", roomHandler.HandleInvites)
-	rooms.Post("/invites/join", roomHandler.HandleJoinViaInvite)
-	rooms.All("/join-requests", roomHandler.HandleJoinRequests)
+
+	roomHandler.MapInvites(rooms, "/invites")
+	roomHandler.MapJoinRequests(rooms, "/join-requests")
 	rooms.Post("/join-requests/respond", roomHandler.HandleRespondToJoinRequest)
+	rooms.Post("/invites/join", roomHandler.HandleJoinViaInvite)
+
 	rooms.Post("/mark-read", roomHandler.HandleMarkAsRead)
 	rooms.Get("/unread", roomHandler.HandleUnreadCount)
 
