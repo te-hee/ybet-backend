@@ -115,11 +115,10 @@ Typy `type`:
 
 ### deleteMessage
 
-```
+```json
 {
   "message_id": "string"
 }
-
 ```
 
 ### systemMessage
@@ -250,7 +249,6 @@ Request:
 
 ```
 /api/v1/<message id>
-
 ```
 
 ```json
