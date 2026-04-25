@@ -166,12 +166,14 @@ w dalej części zwracane errory są pominięte
 
 #### Autoryzacja
 
-POST `/login`
+##### POST `/user/signin`
+
 Request:
 
 ```json
 {
   "username": "string"
+  "password": "string"
 }
 ```
 
@@ -179,11 +181,53 @@ Response:
 
 ```json
 {
-  "token": "<jwt>"
+  "refresh_token": "<jwt>"
+  "auth_token": "<jwt>"
+  "id": "<uuid>"
 }
 ```
 
-Header dla requestów (poza /login):
+
+##### POST `/user/login`
+Request:
+
+```json
+{
+  "username": "string"
+  "password": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "refresh_token": "<jwt>"
+  "auth_token": "<jwt>"
+  "id": "<uuid>"
+}
+
+```
+
+##### POST `/user/auth-token`
+
+Request:
+
+```json
+{
+  "refresh_token": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "auth_token": "<jwt>"
+}
+```
+
+Header dla requestów (poza /user):
 
 ```
 Authorization: Bearer <jwt>
