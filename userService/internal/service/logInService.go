@@ -126,7 +126,6 @@ func (s *UserService) GenerateNewAuthToken(refreshToken string) (*string, error)
 		return nil, status.Error(codes.PermissionDenied, "Not refresh token passed")
 	}
 
-	log.Println(claims.Subject)
 	id, err := uuid.Parse(claims.Subject)
 
 	if err != nil {
@@ -144,7 +143,7 @@ func (s *UserService) GenerateNewAuthToken(refreshToken string) (*string, error)
 		return nil, status.Error(codes.PermissionDenied, "wrong username in token")
 	}
 
-	authToken, err := s.generateJWT(*claims)
+	authToken, err := s.generateJWT(s.newTokenData(user.Username, "Auth", user.Id, time.Now().Add(s.authTokenDuration)))
 
 	if err != nil {
 		return nil, err
