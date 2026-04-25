@@ -8,6 +8,8 @@ import (
 
 type ServerConfig struct {
 	Port string `mapstructure:"port"`
+	AuthEnabled bool `mapstructure:"auth"`
+	ServiceApiKey string `mapstructure:"service_api_key"`
 }
 
 type AuthConfig struct {
@@ -31,6 +33,8 @@ func Load() {
 	viper.AddConfigPath(".")
 
 	viper.SetDefault("server.port", ":6741")
+	viper.SetDefault("server.auth", true)
+	viper.SetDefault("server.service_api_key", "cute")
 	viper.SetDefault("auth.password_salt", "kosher")
 	viper.SetDefault("auth.jwt_key", " ")
 	viper.SetDefault("auth.auth_token_duration", 10)
@@ -38,6 +42,8 @@ func Load() {
 	viper.SetDefault("auth.issuer", "loginService")
 
 	viper.BindEnv("server.port", "LISTEN_PORT")
+	viper.BindEnv("server.service_api_key", "SERVICE_API_KEY")
+	viper.BindEnv("server.enabled", "AUTH")
 	viper.BindEnv("auth.password_salt", "PASSWORD_SALT")
 	viper.BindEnv("auth.jwt_secret", "JWT_SECRET")
 	viper.BindEnv("auth.auth_token_duration", "AUTH_TOKEN_DURATION")

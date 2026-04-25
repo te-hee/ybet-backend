@@ -1,10 +1,11 @@
-package storage 
+package storage
 
 import (
-	"errors"
-	"loginService/internal/model"
+	"userService/internal/model"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type MemoryStorage struct{
@@ -32,13 +33,13 @@ func (r *MemoryStorage) GetUserWithUsername(username string) (model.User, error)
 			return 	user, nil
 		}		
 	}
-	return model.User{}, errors.New("User not found")
+	return model.User{}, status.Error(codes.NotFound,"User not found")
 }
 
 func (r *MemoryStorage) GetUserWithID(id uuid.UUID) (model.User, error){
 	user, ok := r.users[id];
 	if !ok{
-		return model.User{}, errors.New("User not found")
+		return model.User{}, status.Error(codes.NotFound,"User not found")
 	}
 	return user, nil
 }

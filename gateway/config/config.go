@@ -24,6 +24,7 @@ type ServiceEndpoint struct {
 type ServicesConfig struct {
 	Message ServiceEndpoint `mapstructure:"message"`
 	Room    ServiceEndpoint `mapstructure:"room"`
+	User 		ServiceEndpoint `mapstructure:"user"`
 }
 
 type Config struct {
@@ -47,6 +48,8 @@ func Load() {
 	viper.SetDefault("services.message.api_key", "cute")
 	viper.SetDefault("services.room.address", "localhost:50052")
 	viper.SetDefault("services.room.api_key", "cute")
+	viper.SetDefault("services.user.address", "user-service:6741")
+	viper.SetDefault("services.user.api_key", "cute")
 
 	viper.BindEnv("server.port", "GATEWAY_PORT")
 	viper.BindEnv("auth.enabled", "AUTH")
@@ -55,6 +58,8 @@ func Load() {
 	viper.BindEnv("services.message.api_key", "MESSAGE_SERVICE_API_KEY")
 	viper.BindEnv("services.room.address", "ROOM_SERVICE_IP")
 	viper.BindEnv("services.room.api_key", "ROOM_SERVICE_API_KEY")
+	viper.BindEnv("services.user.adress", "USER_SERVICE_IP")
+	viper.BindEnv("services.user.api_key", "USER_SERVICE_API_KEY")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {

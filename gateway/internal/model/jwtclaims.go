@@ -8,8 +8,8 @@ import (
 )
 
 type UserClaims struct {
-	Username string
-	TokenType string
+	Username string `json:"username"`
+	TokenType string `json:"token-type"`
 	jwt.RegisteredClaims
 }
 

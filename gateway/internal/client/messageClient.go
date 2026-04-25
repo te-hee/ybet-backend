@@ -5,8 +5,7 @@ import (
 	"context"
 	"gateway/config"
 	"gateway/internal/model"
-
-	"google.golang.org/grpc/metadata"
+	"gateway/internal/utils"
 )
 
 type MessageServiceClient struct {
@@ -26,7 +25,7 @@ func (c MessageServiceClient) GetMessageHistory(limit uint32) (_ []model.Message
 		Limit: limit,
 	}
 
-	ctxWithAuth := setAuth(c.ctx)
+	ctxWithAuth := utils.SetAuth(c.ctx, config.Cfg.Services.Message.ApiKey)
 
 	response, err := c.grpcClient.GetHistory(ctxWithAuth, request)
 	messages := make([]model.Message, 0)
@@ -45,7 +44,7 @@ func (c MessageServiceClient) SendMessage(message model.SendMessageRequest) (*mo
 		Username: message.Username,
 		Content:  message.Content,
 	}
-	ctxWithAuth := setAuth(c.ctx)
+	ctxWithAuth := utils.SetAuth(c.ctx, config.Cfg.Services.Message.ApiKey)
 	response, err := c.grpcClient.SendMessage(ctxWithAuth, request)
 	if err != nil {
 		return nil, err
@@ -62,7 +61,7 @@ func (c MessageServiceClient) EditMessage(editRequest model.EditMessageRequest) 
 		MessageId: editRequest.MessageId,
 		Content:   editRequest.Content,
 	}
-	ctxWithAuth := setAuth(c.ctx)
+	ctxWithAuth := utils.SetAuth(c.ctx, config.Cfg.Services.Message.ApiKey)
 
 	_, err := c.grpcClient.EditMessage(ctxWithAuth, request)
 	if err != nil {
@@ -75,19 +74,13 @@ func (c MessageServiceClient) DeleteMessage(deleteRequest model.DeleteMessageReq
 		UserId:    deleteRequest.UserId,
 		MessageId: deleteRequest.MessageId,
 	}
-	ctxWithAuth := setAuth(c.ctx)
+	ctxWithAuth := utils.SetAuth(c.ctx, config.Cfg.Services.Message.ApiKey)
 
 	_, err := c.grpcClient.DeleteMessage(ctxWithAuth, request)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-func setAuth(ctx context.Context) context.Context {
-	md := metadata.Pairs("authorization", "Bearer "+config.Cfg.Services.Message.ApiKey)
-	ctxWithAuth := metadata.NewOutgoingContext(ctx, md)
-	return ctxWithAuth
 }
 
 func ProtoToMessage(message *messagev2.Message) model.Message {
