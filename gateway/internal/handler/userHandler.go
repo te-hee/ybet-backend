@@ -51,7 +51,7 @@ func (h *UserHandler) LogIn(c fiber.Ctx) error{
 func (h *UserHandler) GetNewAuthToken(c fiber.Ctx) error{
 	var input model.GetNewAuthTokenRequest
 
-	if err := c.Bind().JSON(input); err != nil{
+	if err := c.Bind().JSON(&input); err != nil{
 		return errors.New("Bad json")
 	}
 

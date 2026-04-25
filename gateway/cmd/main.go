@@ -118,8 +118,8 @@ func main() {
 
 	user := v1.Group("/user")
 
-	user.Post("/sign-in", userHandler.SignIn)
-	user.Post("/log-in", userHandler.LogIn)
+	user.Post("/signin", userHandler.SignIn)
+	user.Post("/login", userHandler.LogIn)
 	user.Post("/auth-token", userHandler.GetNewAuthToken)
 
 	endPointsWithJWTValidation := v1.Group("/")
