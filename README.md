@@ -158,7 +158,9 @@ w dalej części zwracane errory są pominięte
 
 #### Endpointy:
 
-* POST   /login
+* POST   /user/signin
+* POST   /user/login
+* POST   /user/auth-token
 * GET    /messages
 * POST   /messages
 * PATCH  /messages
@@ -230,7 +232,7 @@ Response:
 Header dla requestów (poza /user):
 
 ```
-Authorization: Bearer <jwt>
+Authorization: Bearer <auth_token>
 ```
 
 ---
