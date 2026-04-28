@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"gateway/internal/model"
 	"gateway/internal/service"
 
@@ -20,7 +19,7 @@ func (h *UserHandler) SignIn(c fiber.Ctx) error{
 	var input model.SignInRequestV2
 
 	if err := c.Bind().JSON(&input); err != nil{
-		return errors.New("Bad json")
+		return fiber.NewError(fiber.StatusBadRequest, "Bad json")
 	}
 
 	output, err := h.service.SignIn(input.Password, input.Username)
@@ -36,7 +35,7 @@ func (h *UserHandler) LogIn(c fiber.Ctx) error{
 	var input model.LogInRequestV2
 
 	if err := c.Bind().JSON(&input); err != nil{
-		return errors.New("Bad json")
+		return fiber.NewError(fiber.StatusBadRequest, "Bad json")
 	}
 
 	output, err := h.service.LogIn(input.Password, input.Username)
@@ -52,7 +51,7 @@ func (h *UserHandler) GetNewAuthToken(c fiber.Ctx) error{
 	var input model.GetNewAuthTokenRequest
 
 	if err := c.Bind().JSON(&input); err != nil{
-		return errors.New("Bad json")
+		return fiber.NewError(fiber.StatusBadRequest, "Bad json")
 	}
 
 	authToken, err := h.service.GetNewAuthToken(input.RefreshToken)
