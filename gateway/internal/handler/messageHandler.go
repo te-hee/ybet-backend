@@ -3,7 +3,6 @@ package handler
 import (
 	"gateway/internal/model"
 	"gateway/internal/service"
-	"gateway/internal/utils"
 
 	jwtware "github.com/gofiber/contrib/v3/jwt"
 	"github.com/gofiber/fiber/v3"
@@ -37,8 +36,7 @@ func (h *MessageHander) HandleUpdateMessage(c fiber.Ctx) error {
 
 	err := h.service.EditMessage(input)
 	if err != nil {
-		status, errResp := utils.GRPCToHTTPResponse(err)
-		return utils.WriteJsonErrorWithLog(c, status, errResp)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -57,8 +55,7 @@ func (h *MessageHander) HandleDeleteMessage(c fiber.Ctx) error{
 
 	err := h.service.DeleteMessage(input)
 	if err != nil {
-		status, errResp := utils.GRPCToHTTPResponse(err)
-		return utils.WriteJsonErrorWithLog(c, status, errResp)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -72,8 +69,7 @@ func (h *MessageHander) HandleGetMessageHistory(c fiber.Ctx) error{
 
 	messages, err := h.service.GetMessageHistory(input.Limit)
 	if err != nil {
-		status, errResp := utils.GRPCToHTTPResponse(err)
-		return utils.WriteJsonErrorWithLog(c, status, errResp)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(model.NewOutputGetHistory(messages))
@@ -96,8 +92,7 @@ func (h *MessageHander) HandleSendMessage(c fiber.Ctx) error {
 	input.Username = username
 	resp, err := h.service.SendMessage(input)
 	if err != nil {
-		status, errResp := utils.GRPCToHTTPResponse(err)
-		return utils.WriteJsonErrorWithLog(c, status, errResp)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(resp)

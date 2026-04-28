@@ -2,15 +2,20 @@ package utils
 
 import (
 	"errors"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
+	"google.golang.org/grpc/status"
 )
 
 func AppErrorHandler(c fiber.Ctx, err error) error{
 
 	if validationError, ok := err.(validator.ValidationErrors); ok{
 		return WriteErrorMessageWithLog(c, fiber.StatusBadRequest, formatError(validationError))
+	}
+
+	if st, ok := status.FromError(err); ok{	
+		code, message := GRPCToHTTPResponse(st)
+		return WriteErrorMessageWithLog(c, code, message)
 	}
 
 	code := fiber.StatusInternalServerError

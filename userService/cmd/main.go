@@ -1,14 +1,15 @@
 package main
 
 import (
-	loginv1 "backend/proto/login/v1"
+	userv1 "backend/proto/user/v1"
 	"log"
-	"loginService/config"
-	"loginService/internal/server"
-	"loginService/internal/service"
-	"loginService/internal/storage"
+	"userService/config"
+	"userService/internal/server"
+	"userService/internal/service"
+	"userService/internal/storage"
 	"net"
 	"time"
+	"userService/internal/utils"
 
 	"google.golang.org/grpc"
 )
@@ -21,21 +22,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(utils.AuthInterceptor),
+	)
 
 	storage := storage.NewMemoryStorage()
-	service := service.NewLogInService(
+	service := service.NewUserInService(
 		storage,
 		time.Duration(config.Cfg.Auth.AuthTokenDuration)*time.Minute,
 		time.Duration(config.Cfg.Auth.RefreshTokenDuration)*time.Minute,
 		config.Cfg.Auth.Issuer,
 		config.Cfg.Auth.JwtKey,
 	)
-	server := server.NewLogInServer(*service, config.Cfg.Auth.PasswordSalt)
+	server := server.NewUserInServer(*service, config.Cfg.Auth.PasswordSalt)
 
-	loginv1.RegisterLoginServiceServer(grpcServer, server)
+	userv1.RegisterUserServiceServer(grpcServer, server)
 
-	log.Printf("login service running on %s", config.Cfg.Server.Port)
+	log.Printf("user service running on %s", config.Cfg.Server.Port)
 	err = grpcServer.Serve(lis)
 	if err != nil {
 		log.Fatal(err)

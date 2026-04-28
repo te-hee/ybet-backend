@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"loginService/internal/model"
+	"userService/internal/model"
 
 	"github.com/google/uuid"
 )

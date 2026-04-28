@@ -3,9 +3,9 @@ package main
 import (
 	messagev2 "backend/proto/message/v2"
 	roomv1 "backend/proto/room/v1"
+	userv1 "backend/proto/user/v1"
 	"context"
 	"gateway/config"
-	"gateway/internal/auth"
 	"gateway/internal/client"
 	"gateway/internal/handler"
 	"gateway/internal/model"
@@ -21,6 +21,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 )
 
 
@@ -40,6 +41,8 @@ func main() {
 	})
 
 	app.Use(cors.New())	
+	app.Use(logger.New())
+
 	api := app.Group("/api")
 	
 	var opts []grpc.DialOption
@@ -69,13 +72,21 @@ func main() {
 	roomService := service.NewRoomService(roomClient)
 	roomHandler := handler.NewRoomHandler(roomService)
 
-	// ─── Auth ───────────────────────────────────────────────────────
-	authClient := auth.NewMinimalClient("authClient", time.Minute*time.Duration(config.Cfg.Auth.TokenLifespan))
-	authService := auth.NewMinimalService(authClient)
-	authHandler := auth.NewAuthHandler(authService)
+	// ─── User ───────────────────────────────────────────────────────
+
+	userGrpcConn, err := grpc.NewClient(config.Cfg.Services.User.Address,opts...)
+	if err != nil{
+		log.Panic(err)
+	}
+
+	userCtx := context.Background()
+	userClient := client.NewUserClientGrpc(userv1.NewUserServiceClient(userGrpcConn), time.Second*2, userCtx)
+	userService := service.NewUserService(userClient)
+	userHandler := handler.NewUserHandler(userService)
 
 	jwtSuccessHandler := func(c fiber.Ctx) error{
 		claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
+		log.Println(claims)
 		if claims.TokenType != "Auth" || claims.Username == "" || claims.Subject == ""{
 			return fiber.NewError(fiber.ErrUnauthorized.Code, fiber.ErrUnauthorized.Message)
 		}
@@ -102,7 +113,14 @@ func main() {
 	v1 := api.Group("/v1")
 
 	v1.Get("/health", healthHandler)
-	v1.Post("/login", authHandler.HandleLogin)
+
+	// Login routes
+
+	user := v1.Group("/user")
+
+	user.Post("/signin", userHandler.SignIn)
+	user.Post("/login", userHandler.LogIn)
+	user.Post("/auth-token", userHandler.GetNewAuthToken)
 
 	endPointsWithJWTValidation := v1.Group("/")
 	endPointsWithJWTValidation.Use(jwtVerifyMiddleware)

@@ -42,9 +42,11 @@ services:
     environment:
       - MESSAGE_SERVICE_API_KEY=${MESSAGE_SERVICE_API_KEY}
       - ROOM_SERVICE_API_KEY=${ROOM_SERVICE_API_KEY}
+      - USER_SERVICE_API_KEY=${USER_SERVICE_API_KEY}
       - AUTH=${AUTH}
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
+      - user-service
       - message-service
       - broadcast-service
       - room-service
@@ -61,6 +63,20 @@ services:
     environment:
       - AUTH=${AUTH}
       - SERVICE_API_KEY=${ROOM_SERVICE_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    networks:
+      - app-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: ./userService/Dockerfile
+    container_name: user-service
+    ports:
+      - "6741:6741"
+    environment:
+      - AUTH=&{AUTH}
+      - SERVICE_API_KEY=${USER_SERVICE_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
     networks:
       - app-network

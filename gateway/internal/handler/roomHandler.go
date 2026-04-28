@@ -3,8 +3,6 @@ package handler
 import (
 	"gateway/internal/model"
 	"gateway/internal/service"
-	"gateway/internal/utils"
-	"log"
 
 	jwtware "github.com/gofiber/contrib/v3/jwt"
 	"github.com/gofiber/fiber/v3"
@@ -47,14 +45,6 @@ func (h *RoomHandler) MapJoinRequests(r fiber.Router, router string) {
 	r.Post("/", h.HandleCreateJoinRequest)
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────
-
-func handleGRPCError(c fiber.Ctx, err error) error {
-	status, errResp := utils.GRPCToHTTPResponse(err)
-	log.Println(err)
-	return c.Status(status).JSON(errResp)
-}
-
 // ─── Room CRUD ──────────────────────────────────────────────────────
 
 func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
@@ -67,7 +57,7 @@ func (h *RoomHandler) HandleCreateRoom(c fiber.Ctx) error {
 
 	resp, err := h.service.CreateRoom(token.Raw, input)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
@@ -83,7 +73,7 @@ func (h *RoomHandler) HandleGetRoom(c fiber.Ctx) error{
 
 	resp, err := h.service.GetRoom(token.Raw, input.RoomUUID)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(resp)
@@ -98,7 +88,7 @@ func (h *RoomHandler) HandleUpdateRoomName(c fiber.Ctx) error{
 	}
 
 	if err := h.service.UpdateRoomName(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -113,7 +103,7 @@ func (h *RoomHandler) HandleDeleteRoom(c fiber.Ctx) error {
 	}
 
 	if err := h.service.DeleteRoom(token.Raw, input.RoomUUID); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -124,7 +114,7 @@ func (h *RoomHandler) HandleGetUserRooms(c fiber.Ctx) error {
 
 	rooms, err := h.service.GetUserRooms(token.Raw)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(rooms)
@@ -142,7 +132,7 @@ func (h *RoomHandler) HandleGetRoomMembers(c fiber.Ctx) error {
 
 	members, err := h.service.GetRoomMembers(token.Raw, input.RoomUUID)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(members)
@@ -157,7 +147,7 @@ func (h *RoomHandler) HandleLeaveRoom(c fiber.Ctx) error{
 	}
 
 	if err := h.service.LeaveRoom(token.Raw, input.RoomUUID); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -172,7 +162,7 @@ func (h *RoomHandler) HandleRemoveMember(c fiber.Ctx) error{
 	}
 
 	if err := h.service.RemoveMember(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -190,7 +180,7 @@ func (h *RoomHandler) HandleCreateInvite(c fiber.Ctx) error{
 
 	resp, err := h.service.CreateInvite(token.Raw, input)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(resp)
@@ -207,7 +197,7 @@ func (h *RoomHandler) HandleGetInvite(c fiber.Ctx) error {
 	
 	resp, err := h.service.GetInvite(token.Raw, input.InviteID)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(resp)
@@ -224,7 +214,7 @@ func (h *RoomHandler) HandleDeleteInvite(c fiber.Ctx) error {
 	
 
 	if err := h.service.DeleteInvite(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -239,7 +229,7 @@ func (h *RoomHandler) HandleJoinViaInvite(c fiber.Ctx) error{
 	}
 
 	if err := h.service.JoinViaInvite(token.Raw, input.InviteID); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -256,7 +246,7 @@ func (h *RoomHandler) HandleCreateJoinRequest(c fiber.Ctx) error {
 	}
 
 	if err := h.service.CreateJoinRequest(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusCreated)
@@ -272,7 +262,7 @@ func (h *RoomHandler) HandleGetJoinRequests(c fiber.Ctx) error {
 
 	requests, err := h.service.GetJoinRequests(token.Raw, input.RoomUUID)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON((requests))
@@ -287,7 +277,7 @@ func (h *RoomHandler) HandleRespondToJoinRequest(c fiber.Ctx) error {
 	}
 
 	if err := h.service.RespondToJoinRequest(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -304,7 +294,7 @@ func (h *RoomHandler) HandleMarkAsRead(c fiber.Ctx) error{
 	}
 
 	if err := h.service.MarkAsRead(token.Raw, input); err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.SendStatus(fiber.StatusOK)
@@ -320,7 +310,7 @@ func (h *RoomHandler) HandleUnreadCount(c fiber.Ctx) error {
 
 	resp, err := h.service.GetUnreadCount(token.Raw, input.RoomUUID)
 	if err != nil {
-		return handleGRPCError(c, err)
+		return err
 	}
 
 	return c.Status(fiber.StatusOK).JSON(resp)
