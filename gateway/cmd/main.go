@@ -3,26 +3,48 @@ package main
 import (
 	messagev2 "backend/proto/message/v2"
 	roomv1 "backend/proto/room/v1"
+	userv1 "backend/proto/user/v1"
 	"context"
 	"gateway/config"
-	"gateway/internal/auth"
 	"gateway/internal/client"
 	"gateway/internal/handler"
+	"gateway/internal/model"
 	"gateway/internal/service"
+	"gateway/internal/utils"
 	"log"
-	"net/http"
+	"time"
 
-	"github.com/rs/cors"
+	jwtware "github.com/gofiber/contrib/v3/jwt"
+	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/extractors"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"github.com/gofiber/fiber/v3/middleware/logger"
 )
+
+
 
 func main() {
 	config.Load()
 
-	mux := http.NewServeMux()
+	// ─── Validator ──────────────────────────────────────────────────
 
+	validatorStruct := utils.NewValidateStruct()
+
+	// ─── App Configuration ──────────────────────────────────────────
+
+	app := fiber.New(fiber.Config{
+		ErrorHandler: utils.AppErrorHandler,
+		StructValidator: validatorStruct,
+	})
+
+	app.Use(cors.New())	
+	app.Use(logger.New())
+
+	api := app.Group("/api")
+	
 	var opts []grpc.DialOption
 	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
@@ -50,42 +72,95 @@ func main() {
 	roomService := service.NewRoomService(roomClient)
 	roomHandler := handler.NewRoomHandler(roomService)
 
-	// ─── Auth ───────────────────────────────────────────────────────
-	authClient := auth.NewMinimalClient()
-	authService := auth.NewMinimalService(authClient)
-	authHandler := auth.NewAuthHandler(authService)
+	// ─── User ───────────────────────────────────────────────────────
 
-	healthHandler := func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "ok"}`))
+	userGrpcConn, err := grpc.NewClient(config.Cfg.Services.User.Address,opts...)
+	if err != nil{
+		log.Panic(err)
 	}
 
+	userCtx := context.Background()
+	userClient := client.NewUserClientGrpc(userv1.NewUserServiceClient(userGrpcConn), time.Second*2, userCtx)
+	userService := service.NewUserService(userClient)
+	userHandler := handler.NewUserHandler(userService)
+
+	jwtSuccessHandler := func(c fiber.Ctx) error{
+		claims := jwtware.FromContext(c).Claims.(*model.UserClaims)
+		log.Println(claims)
+		if claims.TokenType != "Auth" || claims.Username == "" || claims.Subject == ""{
+			return fiber.NewError(fiber.ErrUnauthorized.Code, fiber.ErrUnauthorized.Message)
+		}
+		
+		return c.Next()
+	}
+
+	healthHandler := func(c fiber.Ctx) error{
+		c.Status(fiber.StatusOK)
+		return c.JSON(fiber.Map{"status": "ok"})
+	}
+
+	jwtVerifyMiddleware := jwtware.New(
+		jwtware.Config{
+			SigningKey: jwtware.SigningKey{Key: []byte(config.Cfg.Auth.JwtSecret)},
+			Extractor: extractors.FromAuthHeader("Bearer"),
+			Claims: &model.UserClaims{},
+			SuccessHandler: jwtSuccessHandler,
+			ErrorHandler: utils.JwtErrorHandler,
+	})
+
 	// ─── Routes ─────────────────────────────────────────────────────
-	mux.HandleFunc("/health", healthHandler)
-	mux.HandleFunc("/login", authHandler.HandleLogin)
-	mux.HandleFunc("/messages", auth.AuthMiddleware(msgHandler.HandleMesseges))
+
+	v1 := api.Group("/v1")
+
+	v1.Get("/health", healthHandler)
+
+	// Login routes
+
+	user := v1.Group("/user")
+
+	user.Post("/signin", userHandler.SignIn)
+	user.Post("/login", userHandler.LogIn)
+	user.Post("/auth-token", userHandler.GetNewAuthToken)
+
+	endPointsWithJWTValidation := v1.Group("/")
+	endPointsWithJWTValidation.Use(jwtVerifyMiddleware)
+
+	// ─── Messagges ──────────────────────────────────────────────────
+
+	messages := endPointsWithJWTValidation.Group("/messages")
+
+	messages.Get("/", msgHandler.HandleGetMessageHistory)
+	messages.Post("/", msgHandler.HandleSendMessage)
+	messages.Patch("/:message_id<guid>", msgHandler.HandleUpdateMessage)
+	messages.Delete("/:message_id<guid>", msgHandler.HandleDeleteMessage)
 
 	// Room routes
-	mux.HandleFunc("/rooms", auth.AuthMiddleware(roomHandler.HandleRooms))
-	mux.HandleFunc("/rooms/details", auth.AuthMiddleware(roomHandler.HandleRoomDetails))
-	mux.HandleFunc("/rooms/members", auth.AuthMiddleware(roomHandler.HandleMembers))
-	mux.HandleFunc("/rooms/leave", auth.AuthMiddleware(roomHandler.HandleLeaveRoom))
-	mux.HandleFunc("/rooms/remove-member", auth.AuthMiddleware(roomHandler.HandleRemoveMember))
-	mux.HandleFunc("/rooms/invites", auth.AuthMiddleware(roomHandler.HandleInvites))
-	mux.HandleFunc("/rooms/invites/join", auth.AuthMiddleware(roomHandler.HandleJoinViaInvite))
-	mux.HandleFunc("/rooms/join-requests", auth.AuthMiddleware(roomHandler.HandleJoinRequests))
-	mux.HandleFunc("/rooms/join-requests/respond", auth.AuthMiddleware(roomHandler.HandleRespondToJoinRequest))
-	mux.HandleFunc("/rooms/mark-read", auth.AuthMiddleware(roomHandler.HandleMarkAsRead))
-	mux.HandleFunc("/rooms/unread", auth.AuthMiddleware(roomHandler.HandleUnreadCount))
 
-	handlerCORS := cors.Default().Handler(mux)
+	rooms := endPointsWithJWTValidation.Group("/rooms")
+	rooms.Use(jwtVerifyMiddleware)
+
+	roomHandler.MapRooms(rooms, "/")
+	roomHandler.MapRoomDetails(rooms, "/details")
+	rooms.Post("/leave", roomHandler.HandleLeaveRoom)
+
+	roomHandler.MapMembers(rooms, "/members")
+	rooms.Post("/remove-member", roomHandler.HandleRemoveMember)
+
+	roomHandler.MapInvites(rooms, "/invites")
+	roomHandler.MapJoinRequests(rooms, "/join-requests")
+	rooms.Post("/join-requests/respond", roomHandler.HandleRespondToJoinRequest)
+	rooms.Post("/invites/join", roomHandler.HandleJoinViaInvite)
+
+	rooms.Post("/mark-read", roomHandler.HandleMarkAsRead)
+	rooms.Get("/unread", roomHandler.HandleUnreadCount)
 
 	log.Println("Running server on port:", config.Cfg.Server.Port)
 	log.Println("Connected to message service on:", config.Cfg.Services.Message.Address)
 	log.Println("Connected to room service on:", config.Cfg.Services.Room.Address)
 
-	if err := http.ListenAndServe(":"+config.Cfg.Server.Port, handlerCORS); err != nil {
-
+	err = app.Listen(":"+config.Cfg.Server.Port)
+	
+	if err != nil{
 		panic(err)
 	}
 

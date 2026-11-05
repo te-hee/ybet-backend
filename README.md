@@ -141,24 +141,40 @@ Typy `type`:
 
 ---
 
-## Gateway API
+## Gateway API (wszystko pod spodem ma routa /api)
 
-Endpointy:
+### Wersja 1 (Wszystko pod spodem ma routa /v1)
 
-* POST   /login
+#### Errory
+
+Erorr wystąpi gdy status jest 4XX lub 5XX każdy response errora zwraca:
+```json
+{
+  "error": "string"
+}
+```
+w dalej części zwracane errory są pominięte
+
+#### Endpointy:
+
+* POST   /user/signin
+* POST   /user/login
+* POST   /user/auth-token
 * GET    /messages
 * POST   /messages
 * PATCH  /messages
 * DELETE /messages
 
-### Autoryzacja
+#### Autoryzacja
 
-POST `/login`
+##### POST `/user/signin`
+
 Request:
 
 ```json
 {
   "username": "string"
+  "password": "string"
 }
 ```
 
@@ -166,19 +182,61 @@ Response:
 
 ```json
 {
-  "token": "<jwt>"
+  "refresh_token": "<jwt>"
+  "auth_token": "<jwt>"
+  "id": "<uuid>"
 }
 ```
 
-Header dla requestów (poza /login):
+
+##### POST `/user/login`
+Request:
+
+```json
+{
+  "username": "string"
+  "password": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "refresh_token": "<jwt>"
+  "auth_token": "<jwt>"
+  "id": "<uuid>"
+}
 
 ```
-Authorization: Bearer <jwt>
+
+##### POST `/user/auth-token`
+
+Request:
+
+```json
+{
+  "refresh_token": "string"
+}
+```
+
+Response:
+
+```json
+{
+  "auth_token": "<jwt>"
+}
+```
+
+Header dla requestów (poza /user):
+
+```
+Authorization: Bearer <auth_token>
 ```
 
 ---
 
-## Zmienne środowiskowe
+#### Zmienne środowiskowe
 
 | Zmienna            | Typ     | Opis                              |
 | ------------------ | ------- | --------------------------------- |
@@ -188,9 +246,9 @@ Authorization: Bearer <jwt>
 
 ---
 
-## /messages
+#### /messages
 
-### GET
+##### GET
 
 ```
 /messages?limit=<number>
@@ -200,7 +258,6 @@ Response success:
 
 ```json
 {
-  "success": true,
   "messages": [
     {
         "message_id": "string",
@@ -213,16 +270,7 @@ Response success:
 }
 ```
 
-Response error:
-
-```json
-{
-  "success": false,
-  "error": "string"
-}
-```
-
-### POST
+##### POST
 
 Request:
 
@@ -241,36 +289,38 @@ Response:
 }
 ```
 
-### PATCH
+##### PATCH
 
 Request:
 
+```
+/api/v1/<message id>
+```
+
 ```json
 {
-  "message_id": "string",
   "content": "string"
 }
 ```
 
 Status codes:
-- **200** - udało się :3
-- **400** - zły format json :c
-- **401** - brak header `Authorization Bearer <token>` >~<
-- **403** - nie możesz edytować tej wiadomości >:c 
-- **500** - internal server error lub unknown error TwT
-### DELETE
+- **200** - udało się
+- **400** - zły format json
+- **401** - brak header `Authorization Bearer <token>`
+- **403** - nie możesz edytować tej wiadomości
+- **500** - internal server error lub unknown error
+
+##### DELETE
 
 Request:
 
-```json
-{
-  "message_id": "string"
-}
+```
+/api/v1/messages/<message id>
 ```
 
 Status codes:
-- **200** - udało się :3
-- **400** - zły format json :c
-- **401** - brak header `Authorization Bearer <token>` >~<
-- **403** - nie możesz usunąć tej wiadomości >:c 
-- **500** - internal server error lub unknown error TwT
+- **200** - udało się 
+- **400** - zły format json 
+- **401** - brak header `Authorization Bearer <token>`
+- **403** - nie możesz usunąć tej wiadomości 
+- **500** - internal server error lub unknown error

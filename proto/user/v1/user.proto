@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "proto/user/v1;userv1";
+
+service UserService{
+  rpc SignIn(SignInRequest) returns (SignInResponse);
+  rpc LogIn(LogInRequest) returns (LogInResponse);
+  rpc GetNewAuthToken(GetNewAuthTokenRequest) returns (GetNewAuthTokenResponse);
+  rpc DoesUserExistsAndHasValidName(DoesUserExistsAndHasValidNameRequest) returns (DoesUserExistsAndHasValidNameResponse);
+}
+
+message SignInRequest{
+  string password = 1;
+  string username = 2;
+}
+
+message SignInResponse{
+  string user_id = 1;
+  string refreshToken = 2;
+  string authToken = 3;
+}
+
+message LogInRequest{
+  string password = 1;
+  string username = 2;
+}
+
+message LogInResponse{
+  string user_id = 1;
+  string refreshToken = 2;
+  string authToken = 3;
+}
+
+message GetNewAuthTokenRequest{
+  string refreshToken = 1;
+}
+
+message GetNewAuthTokenResponse{
+  string authToken = 1;
+}
+
+message DoesUserExistsAndHasValidNameRequest{
+  string user_id = 1;
+  string username = 2;
+}
+
+message DoesUserExistsAndHasValidNameResponse{
+  bool valid = 1;
+}

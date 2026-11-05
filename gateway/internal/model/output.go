@@ -1,16 +1,10 @@
 package model
 
-type Output struct {
-	Success bool `json:"success"`
-}
-
 type OutputError struct {
-	Output
 	Error string `json:"error"`
 }
 
 type OutputGetHistory struct {
-	Output
 	Messages []Message `json:"messages"`
 }
 
@@ -19,14 +13,10 @@ type OutputSendMessege struct {
 	Timestamp int64  `json:"timestamp"`
 }
 
-func NewOutput(success bool) Output {
-	return Output{Success: success}
-}
-
 func NewOutputError(errorMessage string) OutputError {
-	return OutputError{Output: NewOutput(false), Error: errorMessage}
+	return OutputError{Error: errorMessage}
 }
 
 func NewOutputGetHistory(messages []Message) OutputGetHistory {
-	return OutputGetHistory{Output: NewOutput(true), Messages: messages}
+	return OutputGetHistory{Messages: messages}
 }

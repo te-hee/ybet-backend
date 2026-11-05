@@ -1,10 +1,12 @@
 package client
 
-import "gateway/internal/model"
+import (
+	"gateway/internal/model"
+)
 
 type MessageClient interface {
 	GetMessageHistory(limit uint32) ([]model.Message, error)
-	SendMessage(message model.InputMessage) (*model.OutputSendMessege, error)
+	SendMessage(message model.SendMessageRequest) (*model.OutputSendMessege, error)
 	EditMessage(editRequest model.EditMessageRequest) error
 	DeleteMessage(deleteRequest model.DeleteMessageRequest) error
 }
@@ -39,4 +41,10 @@ type RoomClient interface {
 
 	// Internal
 	GetAllowedRooms(userUUID string) ([]string, error)
+}
+
+type UserClient interface {
+	SignIn(password string, username string) (*model.SignInResponseV2, error)
+	LogIn(password string, username string) (*model.LogInResponseV2, error)
+	GetNewAuthToken(refreshToken string) (*string, error)
 }
