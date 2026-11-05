@@ -75,7 +75,7 @@ services:
     ports:
       - "6741:6741"
     environment:
-      - AUTH=&{AUTH}
+      - AUTH=${AUTH}
       - SERVICE_API_KEY=${USER_SERVICE_API_KEY}
       - JWT_SECRET=${JWT_SECRET}
     networks:

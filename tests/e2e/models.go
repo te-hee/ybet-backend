@@ -1,12 +1,14 @@
 package e2e
 
-type loginRequest struct {
+type signInRequest struct {
 	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-type loginResponse struct {
-	Token  string `json:"token"`
-	UserId string `json:"user_id"`
+type signInResponse struct {
+	Id           string `json:"id"`
+	RefreshToken string `json:"refresh_token"`
+	AuthToken    string `json:"auth_token"`
 }
 
 type sendMessageRequest struct {
