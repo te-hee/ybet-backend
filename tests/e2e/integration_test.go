@@ -145,28 +145,28 @@ func connectToWebSocket(token string) (*websocket.Conn, *http.Response, error) {
 }
 
 func loginAndGetToken(username, password string) (string, error) {
-	//password field is for future
-	body, _ := json.Marshal(loginRequest{
+	body, _ := json.Marshal(signInRequest{
 		Username: username,
+		Password: password,
 	})
 
-	resp, err := http.Post(GatewayURL+"/login", "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(GatewayURL+"/user/signin", "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return "", fmt.Errorf("failed to send POST request to /login")
+		return "", fmt.Errorf("failed to send POST request to /user/signin")
 	}
-	if resp.StatusCode != 200 {
-		return "", fmt.Errorf("login response status code should be 200")
-	}
-
 	defer resp.Body.Close()
 
-	var loginResp loginResponse
-
-	if err := json.NewDecoder(resp.Body).Decode(&loginResp); err != nil {
-		return "", fmt.Errorf("login response body doesn't match")
+	if resp.StatusCode != http.StatusCreated {
+		return "", fmt.Errorf("signin response status code should be 201, got %d", resp.StatusCode)
 	}
 
-	return loginResp.Token, nil
+	var signInResp signInResponse
+
+	if err := json.NewDecoder(resp.Body).Decode(&signInResp); err != nil {
+		return "", fmt.Errorf("signin response body doesn't match")
+	}
+
+	return signInResp.AuthToken, nil
 }
 
 func waitForEvent(t *testing.T, ws *websocket.Conn, expectedType string, timeout time.Duration) map[string]any {
@@ -202,10 +202,9 @@ func waitForEvent(t *testing.T, ws *websocket.Conn, expectedType string, timeout
 
 func sendEditRequest(url, token, msgID, content string) *http.Response {
 	body, _ := json.Marshal(map[string]string{
-		"message_id": msgID,
-		"content":    content,
+		"content": content,
 	})
-	req, _ := http.NewRequest(http.MethodPatch, url+"/messages", bytes.NewBuffer(body))
+	req, _ := http.NewRequest(http.MethodPatch, url+"/messages/"+msgID, bytes.NewBuffer(body))
 	req.Header.Add("Authorization", "Bearer "+token)
 	req.Header.Add("Content-Type", "application/json")
 
@@ -214,10 +213,7 @@ func sendEditRequest(url, token, msgID, content string) *http.Response {
 }
 
 func sendDeleteRequest(url, token, msgID string) *http.Response {
-	body, _ := json.Marshal(map[string]string{
-		"message_id": msgID,
-	})
-	req, _ := http.NewRequest(http.MethodDelete, url+"/messages", bytes.NewBuffer(body))
+	req, _ := http.NewRequest(http.MethodDelete, url+"/messages/"+msgID, nil)
 	req.Header.Add("Authorization", "Bearer "+token)
 	resp, _ := http.DefaultClient.Do(req)
 	return resp

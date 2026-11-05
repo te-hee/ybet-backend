@@ -9,8 +9,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate bool, groupID string) (domain.CreateRoomResult, error) {
+func (s *roomService) CreateRoom(ctx context.Context, req domain.CreateRoomDTO) (domain.CreateRoomResult, error) {
 	var result domain.CreateRoomResult
+
+	if req.Name == "" {
+		return result, domain.NewError(domain.CodeInvalidArgument, "room name cannot be empty")
+	}
 
 	userID, err := contextkeys.UserUUIDFromContext(ctx)
 	if err != nil {
@@ -21,16 +25,21 @@ func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate boo
 	createdAt := time.Now()
 	room := domain.Room{
 		RoomUUID:    roomID,
-		Name:        name,
+		Name:        req.Name,
 		AdminID:     userID,
-		IsPrivate:   isPrivate,
-		GroupID:     groupID,
+		IsPrivate:   req.IsPrivate,
+		GroupID:     req.GroupID,
 		MemberCount: 1,
 		CreatedAt:   createdAt,
 		UpdatedAt:   createdAt,
 	}
 
 	if err = s.repo.CreateRoom(ctx, room); err != nil {
+		return result, err
+	}
+
+	err = s.eventPublisher.PublishRoomCreated(ctx, room)
+	if err != nil {
 		return result, err
 	}
 
@@ -42,22 +51,80 @@ func (s *roomService) CreateRoom(ctx context.Context, name string, isPrivate boo
 	return result, nil
 }
 
-func (s *roomService) GetRoom(ctx context.Context, roomUUID string) (domain.Room, error) {
-	// TODO: implement
-	panic("not implemented")
+func (s *roomService) GetRoom(ctx context.Context, req domain.GetRoomDTO) (domain.Room, error) {
+	room, err := s.repo.GetRoom(ctx, req.RoomUUID)
+	if err != nil {
+		return domain.Room{}, err
+	}
+
+	if !room.IsPrivate {
+		return room, nil
+	}
+
+	userID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return domain.Room{}, err
+	}
+
+	isMember, err := s.repo.CheckIsMember(ctx, userID, req.RoomUUID)
+	if err != nil {
+		return domain.Room{}, err
+	}
+
+	if !isMember {
+		return domain.Room{}, domain.NewError(domain.CodePermissionDenied, "Only room members can access private rooms")
+	}
+
+	return room, nil
 }
 
-func (s *roomService) UpdateRoomName(ctx context.Context, roomUUID string, name string) error {
-	// TODO: implement
-	panic("not implemented")
+func (s *roomService) UpdateRoomName(ctx context.Context, req domain.UpdateRoomNameDTO) error {
+	if req.Name == "" {
+		return domain.NewError(domain.CodeInvalidArgument, "room name cannot be empty")
+	}
+
+	userID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can update room name")
+	}
+
+	return s.repo.UpdateRoomName(ctx, req.RoomUUID, req.Name)
 }
 
-func (s *roomService) DeleteRoom(ctx context.Context, roomUUID string) error {
-	// TODO: implement
-	panic("not implemented")
+func (s *roomService) DeleteRoom(ctx context.Context, req domain.DeleteRoomDTO) error {
+	userID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	isAdmin, err := s.repo.CheckIsAdmin(ctx, userID, req.RoomUUID)
+	if err != nil {
+		return err
+	}
+	if !isAdmin {
+		return domain.NewError(domain.CodePermissionDenied, "Only admins can delete rooms")
+	}
+
+	err = s.repo.DeleteRoom(ctx, req.RoomUUID)
+	if err != nil {
+		return err
+	}
+
+	return s.eventPublisher.PublishRoomDeleted(ctx, req.RoomUUID)
 }
 
 func (s *roomService) GetUserRooms(ctx context.Context) ([]domain.UserRoom, error) {
-	// TODO: implement
-	panic("not implemented")
+	userID, err := contextkeys.UserUUIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.GetUserRooms(ctx, userID)
 }

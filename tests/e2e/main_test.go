@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	GatewayURL = "http://localhost:8080"
+	GatewayURL = "http://localhost:8080/api/v1"
 	WSURL      = "ws://localhost:8081/ws"
 )
 
@@ -22,8 +22,11 @@ func TestMain(m *testing.M) {
 	stack, err := compose.NewDockerCompose(composeFilePaths...)
 	stackWithEnv := stack.WithEnv(map[string]string{
 		"ENV":                     "dev",
-		"NO_AUTH":                 "false",
+		"AUTH":                    "true",
+		"JWT_SECRET":              "e2e-jwt-secret",
 		"MESSAGE_SERVICE_API_KEY": "secret123",
+		"ROOM_SERVICE_API_KEY":    "secret123",
+		"USER_SERVICE_API_KEY":    "secret123",
 
 		"NATS_ADDRESS": "nats:4222",
 	})

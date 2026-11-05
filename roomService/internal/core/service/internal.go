@@ -3,17 +3,15 @@ package service
 import (
 	"context"
 	"roomService/internal/contextkeys"
-
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
+	"roomService/internal/core/domain"
 )
 
-func (s *roomService) GetAllowedRooms(ctx context.Context, userUUID string) ([]string, error) {
+func (s *roomService) GetAllowedRooms(ctx context.Context, req domain.GetAllowedRoomsDTO) ([]string, error) {
 	var roomsIDs []string
 	if !contextkeys.IsInternalRequest(ctx) {
-		return roomsIDs, status.Errorf(codes.Unauthenticated, "internal requests only")
+		return roomsIDs, domain.NewError(domain.CodeUnauthenticated, "internal requests only")
 	}
-	rooms, err := s.repo.GetUserRooms(ctx, userUUID)
+	rooms, err := s.repo.GetUserRooms(ctx, req.UserUUID)
 	if err != nil {
 		return roomsIDs, err
 	}

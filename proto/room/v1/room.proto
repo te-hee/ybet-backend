@@ -135,8 +135,17 @@ message RespondToJoinRequestRequest {
   string room_uuid   = 1;
   string user_uuid   = 2; // Joining user id
   RequestStatus decision = 3; 
+  string encrypted_key = 4;
 }
-
+message PendingKeysResponse {
+  repeated PendingKey pending_keys = 1;
+}
+message PendingKey {
+  string room_uuid = 1;
+}
+message AcknowledgeKeyDeliveryRequest {
+  string room_uuid = 1;
+}
 
 message MarkAsReadRequest {
   string room_uuid          = 1;
@@ -176,6 +185,8 @@ service RoomService {
   rpc CreateJoinRequest(CreateJoinRequestRequest) returns (google.protobuf.Empty);
   rpc GetJoinRequests(GetJoinRequestsRequest) returns (GetJoinRequestsResponse);
   rpc RespondToJoinRequest(RespondToJoinRequestRequest) returns (google.protobuf.Empty);
+  rpc GetPendingKeys(google.protobuf.Empty) returns (PendingKeysResponse);
+  rpc AcknowledgeKeyDelivery(AcknowledgeKeyDeliveryRequest) returns (google.protobuf.Empty);
 
   rpc MarkAsRead(MarkAsReadRequest) returns (google.protobuf.Empty);
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);

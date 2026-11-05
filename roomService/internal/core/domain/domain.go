@@ -65,3 +65,9 @@ type CreateInviteResult struct {
 type GetUnreadCountResult struct {
 	UnreadCount int32
 }
+
+type PendingKey struct {
+	UserUUID string
+	RoomUUID string
+	Key      string
+}
